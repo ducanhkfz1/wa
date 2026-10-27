@@ -25,11 +25,11 @@ getgenv().Config = {
     },
     Webhook = {
         Enable = true, -- true/false
-        HugeWebhookURL = "https://discord.com/api/webhooks/1486589834297348338/AtiMLlFQDuilCNEWymiZOYLZ7MOKZ5ba3ogV6uy_HFyC1UlcGKio5XVadaQ-RvzwBMdd",
-        TitanicWebhookURL = "https://discord.com/api/webhooks/1486589834297348338/AtiMLlFQDuilCNEWymiZOYLZ7MOKZ5ba3ogV6uy_HFyC1UlcGKio5XVadaQ-RvzwBMdd",
-        GargantuanWebhookURL = "https://discord.com/api/webhooks/1486589834297348338/AtiMLlFQDuilCNEWymiZOYLZ7MOKZ5ba3ogV6uy_HFyC1UlcGKio5XVadaQ-RvzwBMdd",
-        RankWebhookURL = "https://discord.com/api/webhooks/1486589834297348338/AtiMLlFQDuilCNEWymiZOYLZ7MOKZ5ba3ogV6uy_HFyC1UlcGKio5XVadaQ-RvzwBMdd",
-        TimeTrialWebhookURL = "https://discord.com/api/webhooks/1486589834297348338/AtiMLlFQDuilCNEWymiZOYLZ7MOKZ5ba3ogV6uy_HFyC1UlcGKio5XVadaQ-RvzwBMdd",
+        HugeWebhookURL = "",
+        TitanicWebhookURL = "",
+        GargantuanWebhookURL = "",
+        RankWebhookURL = "",
+        TimeTrialWebhookURL = "",
         DiscordID  = "" -- Discord ID
     }
 }
