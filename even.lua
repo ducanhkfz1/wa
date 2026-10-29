@@ -16,12 +16,12 @@ getgenv().Config = {
         OpenChests = {1,2,3},
     },
     AutoMail = {
-        Enable        = false, -- true/false
+        Enable        = true, -- true/false
         AutoClaim     = true, -- auto nhận mail
         SendAllHuges  = false, -- true/false
-        User         = { "" }, -- Your User for mail
+        User          = { "" }, -- Your User for mail
         Items = {
-            -- ["Name"]           = { Class = "Classitem", Amount = Number },
+            -- ["Name"] = { Class = "Classitem", Amount = Number },
         }
     },
     Webhook = {
@@ -37,25 +37,29 @@ getgenv().Config = {
 
 local Config = getgenv().Config
 
-local function clickMailButton(button)
-    if not button then
-        return false
+local function normalizeText(value)
+    if type(value) ~= "string" then
+        return ""
     end
+    return string.lower(string.gsub(value, "%s+", " "))
+end
 
-    local ok, err = pcall(function()
-        if button:IsA("TextButton") or button:IsA("ImageButton") then
-            local text = (button.Text or ""):lower()
-            if string.find(text, "claim") or string.find(text, "collect") or string.find(text, "receive") or string.find(text, "nhận") then
-                if button:IsA("TextButton") and button.Visible ~= false then
-                    button:Activate()
-                elseif button:IsA("ImageButton") and button.Visible ~= false then
-                    button:Activate()
-                end
-            end
+local function isClaimAllText(text)
+    local t = normalizeText(text)
+    return t == "claim all" or t == "claim" or t == "nhận tất" or t == "nhận"
+end
+
+local function tryClick(obj)
+    if not obj then return end
+    pcall(function()
+        if obj.Activated then
+            obj:Activate()
+        elseif obj.MouseButton1Click then
+            obj:MouseButton1Click()
+        elseif obj.Click then
+            obj:Click()
         end
     end)
-
-    return ok and err ~= nil
 end
 
 local function autoClaimMail()
@@ -68,28 +72,20 @@ local function autoClaimMail()
         return
     end
 
-    local playerGui = player:FindFirstChildOfClass("PlayerGui")
-    if not playerGui then
+    local gui = player:FindFirstChildOfClass("PlayerGui")
+    if not gui then
         return
     end
 
-    local queue = {playerGui}
-    local checked = {}
+    for _, obj in ipairs(gui:GetDescendants()) do
+        if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+            local text = obj.Text or ""
+            local name = obj.Name or ""
 
-    while #queue > 0 do
-        local obj = table.remove(queue, 1)
-        if obj and not checked[obj] then
-            checked[obj] = true
-
-            if obj:IsA("TextButton") or obj:IsA("ImageButton") then
-                local text = (obj.Text or ""):lower()
-                if string.find(text, "claim") or string.find(text, "collect") or string.find(text, "receive") or string.find(text, "nhận") then
-                    clickMailButton(obj)
+            if isClaimAllText(text) or isClaimAllText(name) then
+                if obj.Visible ~= false then
+                    tryClick(obj)
                 end
-            end
-
-            for _, child in ipairs(obj:GetChildren()) do
-                table.insert(queue, child)
             end
         end
     end
@@ -98,7 +94,7 @@ end
 spawn(function()
     while true do
         pcall(autoClaimMail)
-        wait(5)
+        task.wait(1)
     end
 end)
 
