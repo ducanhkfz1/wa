@@ -43,7 +43,7 @@ local function createFallbackGui()
     main.Name = "Main"
     main.Size = UDim2.new(0, 440, 0, 560)
     main.Position = UDim2.new(0.5, -220, 0.5, -280)
-    main.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
+    main.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
     main.BorderSizePixel = 0
     main.Parent = screenGui
 
@@ -55,7 +55,7 @@ local function createFallbackGui()
     glow.Size = UDim2.new(1, 0, 1, 0)
     glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     glow.BorderSizePixel = 0
-    glow.BackgroundTransparency = 0.92
+    glow.BackgroundTransparency = 0.94
     glow.Parent = main
     local glowCorner = Instance.new("UICorner")
     glowCorner.CornerRadius = UDim.new(0, 22)
@@ -63,7 +63,7 @@ local function createFallbackGui()
 
     local top = Instance.new("Frame")
     top.Size = UDim2.new(1, 0, 0, 100)
-    top.BackgroundColor3 = Color3.fromRGB(36, 22, 50)
+    top.BackgroundColor3 = Color3.fromRGB(32, 32, 35)
     top.BorderSizePixel = 0
     top.Parent = main
 
@@ -73,9 +73,9 @@ local function createFallbackGui()
 
     local topGradient = Instance.new("UIGradient")
     topGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 128, 214)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(165, 125, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 96, 255))
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 180, 180)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 70, 75))
     })
     topGradient.Rotation = 55
     topGradient.Parent = top
@@ -84,9 +84,9 @@ local function createFallbackGui()
     icon.Size = UDim2.new(0, 50, 0, 50)
     icon.Position = UDim2.new(0, 18, 0, 25)
     icon.BackgroundTransparency = 1
-    icon.Text = "💖"
+    icon.Text = "◉"
     icon.Font = Enum.Font.GothamBlack
-    icon.TextSize = 28
+    icon.TextSize = 26
     icon.TextColor3 = Color3.fromRGB(255, 255, 255)
     icon.Parent = top
 
@@ -105,21 +105,21 @@ local function createFallbackGui()
     subtitle.Size = UDim2.new(1, -110, 0, 18)
     subtitle.Position = UDim2.new(0, 84, 0, 48)
     subtitle.BackgroundTransparency = 1
-    subtitle.Text = "Status: ONLINE • Premium UI"
+    subtitle.Text = "Status: ONLINE • Black & White"
     subtitle.Font = Enum.Font.Gotham
     subtitle.TextSize = 11
-    subtitle.TextColor3 = Color3.fromRGB(235, 230, 255)
+    subtitle.TextColor3 = Color3.fromRGB(220, 220, 220)
     subtitle.TextXAlignment = Enum.TextXAlignment.Left
     subtitle.Parent = top
 
     local close = Instance.new("TextButton")
     close.Size = UDim2.new(0, 30, 0, 30)
     close.Position = UDim2.new(1, -42, 0, 16)
-    close.BackgroundColor3 = Color3.fromRGB(255, 110, 140)
+    close.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     close.Text = "X"
     close.Font = Enum.Font.GothamBold
     close.TextSize = 15
-    close.TextColor3 = Color3.fromRGB(255, 255, 255)
+    close.TextColor3 = Color3.fromRGB(0, 0, 0)
     close.BorderSizePixel = 0
     close.Parent = top
 
@@ -140,7 +140,7 @@ local function createFallbackGui()
         local card = Instance.new("Frame")
         card.Size = UDim2.new(1, -12, 0, 48)
         card.Position = UDim2.new(0, 6, 0, y)
-        card.BackgroundColor3 = Color3.fromRGB(45, 32, 60)
+        card.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
         card.BorderSizePixel = 0
         card.Parent = body
 
@@ -151,7 +151,7 @@ local function createFallbackGui()
         local mark = Instance.new("Frame")
         mark.Size = UDim2.new(0, 6, 0, 24)
         mark.Position = UDim2.new(0, 14, 0.5, -12)
-        mark.BackgroundColor3 = Color3.fromRGB(255, 150, 206)
+        mark.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         mark.BorderSizePixel = 0
         mark.Parent = card
 
@@ -173,11 +173,11 @@ local function createFallbackGui()
         local switch = Instance.new("TextButton")
         switch.Size = UDim2.new(0, 52, 0, 24)
         switch.Position = UDim2.new(1, -64, 0.5, -12)
-        switch.BackgroundColor3 = Color3.fromRGB(255, 106, 180)
+        switch.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         switch.Text = "ON"
         switch.Font = Enum.Font.GothamBold
         switch.TextSize = 11
-        switch.TextColor3 = Color3.fromRGB(255, 255, 255)
+        switch.TextColor3 = Color3.fromRGB(0, 0, 0)
         switch.BorderSizePixel = 0
         switch.Parent = card
 
@@ -189,7 +189,8 @@ local function createFallbackGui()
         switch.MouseButton1Click:Connect(function()
             state = not state
             switch.Text = state and "ON" or "OFF"
-            switch.BackgroundColor3 = state and Color3.fromRGB(255, 106, 180) or Color3.fromRGB(81, 74, 106)
+            switch.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(80, 80, 85)
+            switch.TextColor3 = state and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
         end)
 
         return card
