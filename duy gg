@@ -23,192 +23,331 @@ for _, url in ipairs(urls) do
     end
 end
 
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/gen2"))()
+local Rayfield = nil
+local success, RayfieldModule = pcall(function()
+    return loadstring(game:HttpGet("https://sirius.menu/gen2"))()
+end)
+if success and type(RayfieldModule) == "table" then
+    Rayfield = RayfieldModule
+end
 
-local window = Rayfield:CreateWindow({
-    name = "Mew Mew Hub",
-    sidebarLayout = true,
-    configuration = {
-        autoSave = launchConfig == nil,
-        autoLoad = launchConfig == nil,
-        fileName = "MewMewHubUI",
-    },
-})
+local function createFallbackGui()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "KaitunMewMewHub"
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.IgnoreGuiInset = true
+    screenGui.Parent = game:GetService("CoreGui")
 
--- Mew Mew Hub style: themed tabs and grouped sections.
-local main = window:CreateTab({ name = "Mew Home" })
-local farm = window:CreateTab({ name = "Mew Farm" })
-local optimize = window:CreateTab({ name = "Mew Optimize" })
-local eventTab = window:CreateTab({ name = "Mew Event" })
-local mail = window:CreateTab({ name = "Mew Mail" })
-local trading = window:CreateTab({ name = "Mew Trade" })
-local rank = window:CreateTab({ name = "Mew Rank" })
-local automatic = window:CreateTab({ name = "Mew Auto" })
-local settings = window:CreateTab({ name = "Mew Settings" })
+    local main = Instance.new("Frame")
+    main.Name = "Main"
+    main.Size = UDim2.new(0, 430, 0, 520)
+    main.Position = UDim2.new(0.5, -215, 0.5, -260)
+    main.BackgroundColor3 = Color3.fromRGB(20, 14, 30)
+    main.BorderSizePixel = 0
+    main.Parent = screenGui
 
-local function createToggle(tab, name, flag)
-    local initial = launchToggles[flag] == true
-    local applied = false
-    local function apply(enabled)
-        local feature = features[flag]
-        if feature and (not launchConfig or applied ~= enabled) then
-            applied = enabled
-            feature.duy(enabled, features)
-        end
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 18)
+    corner.Parent = main
+
+    local top = Instance.new("Frame")
+    top.Size = UDim2.new(1, 0, 0, 60)
+    top.BackgroundColor3 = Color3.fromRGB(40, 28, 56)
+    top.BorderSizePixel = 0
+    top.Parent = main
+
+    local topCorner = Instance.new("UICorner")
+    topCorner.CornerRadius = UDim.new(0, 18)
+    topCorner.Parent = top
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -80, 0, 32)
+    title.Position = UDim2.new(0, 20, 0, 15)
+    title.BackgroundTransparency = 1
+    title.Text = "Kaitun Mew Mew Hub"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 18
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = top
+
+    local status = Instance.new("TextLabel")
+    status.Size = UDim2.new(1, -20, 0, 20)
+    status.Position = UDim2.new(0, 20, 0, 38)
+    status.BackgroundTransparency = 1
+    status.Text = "Status: ONLINE"
+    status.Font = Enum.Font.Gotham
+    status.TextSize = 11
+    status.TextColor3 = Color3.fromRGB(177, 255, 185)
+    status.TextXAlignment = Enum.TextXAlignment.Left
+    status.Parent = top
+
+    local body = Instance.new("ScrollingFrame")
+    body.Size = UDim2.new(1, -20, 1, -80)
+    body.Position = UDim2.new(0, 10, 0, 70)
+    body.BackgroundTransparency = 1
+    body.BorderSizePixel = 0
+    body.CanvasSize = UDim2.new(0, 0, 0, 600)
+    body.ScrollBarThickness = 6
+    body.Parent = main
+
+    local function addButton(text, y)
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(1, -20, 0, 40)
+        button.Position = UDim2.new(0, 10, 0, y)
+        button.BackgroundColor3 = Color3.fromRGB(90, 70, 120)
+        button.Text = text
+        button.Font = Enum.Font.GothamSemibold
+        button.TextSize = 14
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.BorderSizePixel = 0
+        button.Parent = body
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 12)
+        corner.Parent = button
+
+        return button
     end
 
-    tab:CreateToggle({
-        name = name,
-        flag = flag,
-        value = initial,
-        callback = apply,
-    })
-
-    if initial then
-        table.insert(startupActions, function()
-            apply(true)
+    local y = 0
+    for _, label in ipairs({
+        "Farm", "Optimize", "Mail", "Rank", "Auto", "Settings"
+    }) do
+        local btn = addButton(label, y)
+        y += 48
+        btn.MouseButton1Click:Connect(function()
+            if btn.Text == "Farm" then
+                btn.Text = "Farm - ON"
+            elseif btn.Text == "Farm - ON" then
+                btn.Text = "Farm"
+            end
         end)
     end
-end
 
-main:CreateSection({ name = "Quick Start" })
-createToggle(main, "🐾 inf pet speed", "FarmInfinityPetSpeed")
-createToggle(main, "⚡ fast farm", "FarmFastFarm")
-createToggle(main, "✨ auto tap", "FarmAutoTap")
-createToggle(main, "💎 auto claim orb", "FarmAutoCollectOrb")
-createToggle(main, "📍 tele to best area", "FarmTeleToBestArea")
-createToggle(main, "🌍 tele to best world", "FarmTeleToBestWorld")
+    local drag = Instance.new("TextButton")
+    drag.Size = UDim2.new(1, 0, 0, 60)
+    drag.Position = UDim2.new(0, 0, 0, 0)
+    drag.BackgroundTransparency = 1
+    drag.Text = ""
+    drag.Parent = top
 
-farm:CreateSection({ name = "Farming" })
-createToggle(farm, "🐾 inf pet speed", "FarmInfinityPetSpeed")
-createToggle(farm, "⚡ fast farm", "FarmFastFarm")
-createToggle(farm, "✨ auto tap", "FarmAutoTap")
-createToggle(farm, "💎 auto claim orb, lootbox", "FarmAutoCollectOrb")
-createToggle(farm, "📍 tele to best area", "FarmTeleToBestArea")
-createToggle(farm, "🌍 tele to best world", "FarmTeleToBestWorld")
-createToggle(farm, "🛒 auto buy next area", "FarmAutoBuyNextArea")
-
-farm:CreateSection({ name = "Update Slot" })
-createToggle(farm, "🦴 auto upd pet slot", "FarmAutoPetSlot")
-createToggle(farm, "🥚 auto upd egg slot", "FarmAutoEggSlot")
-
-optimize:CreateSection({ name = "Loot boxes" })
-createToggle(optimize, "📦 disable loot boxes", "OptimizeDisableLootBoxes")
-optimize:CreateSection({ name = "Dropped objects" })
-createToggle(optimize, "🧹 disable objects", "OptimizeDisableObjects")
-optimize:CreateSection({ name = "Combined" })
-createToggle(optimize, "✨ super optimize", "OptimizeSuper")
-
-eventTab:CreateSection({ name = "Event" })
-createToggle(eventTab, "🎉 auto event reward", "EventAutoReward")
-createToggle(eventTab, "🎁 auto collect event reward", "EventAutoCollect")
-
-mail:CreateSection({ name = "Mail" })
-createToggle(mail, "📬 auto claim mail", "MailAutoClaim")
-mail:CreateInput({
-    name = "User Name",
-    flag = "MailUserName",
-    value = "",
-    placeholder = "...",
-})
-
-mail:CreateDropdown({
-    name = "Item Class",
-    flag = "ItemClass",
-    options = { "A", "B" },
-    multiSelect = true,
-    value = {},
-})
-mail:CreateDropdown({
-    name = "Item Name",
-    flag = "ItemName",
-    options = { "A", "B" },
-    multiSelect = true,
-    value = {},
-})
-createToggle(mail, "🎁 auto gift", "MailAutoGift")
-
-trading:CreateSection({ name = "Booth Sniping" })
-local boothSnipe = trading:CreateGroup({ direction = "column" })
-boothSnipe:CreateSection({ name = "Săn món ở gian hàng" })
-
-local boothSeller = trading:CreateGroup({ direction = "column" })
-boothSeller:CreateSection({ name = "Bán ở gian hàng" })
-
-rank:CreateSection({ name = "Rank" })
-createToggle(rank, "🏆 auto claim rank reward", "RankAutoClaimReward")
-rank:CreateSection({ name = "Auto quest" })
-createToggle(rank, "📜 auto rank quest", "RankAutoQuest")
-createToggle(rank, "📊 stats gui", "RankStatsGui")
-
-automatic:CreateSection({ name = "Auto" })
-createToggle(automatic, "🎁 auto claim free gift", "AutoClaimFreeGift")
-
-local giftOptions = { "Gift Bag", "Large Gift Bag", "Mini Chest" }
-local initialGifts = {}
-if launchConfig and type(launchConfig.gifts) == "table" then
-    for _, id in ipairs(giftOptions) do
-        if table.find(launchConfig.gifts, id) then
-            table.insert(initialGifts, id)
+    local dragging = false
+    local dragStart
+    local startPos
+    drag.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = main.Position
         end
-    end
+    end)
+    drag.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local delta = input.Position - dragStart
+            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    drag.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+
+    return screenGui
 end
 
-local function setGiftSelection(values)
-    local feature = features.AutoOpenGifts
-    if feature then
-        feature.setSelection(values)
-    end
+local window = nil
+if Rayfield then
+    window = Rayfield:CreateWindow({
+        name = "Kaitun Mew Mew Hub",
+        sidebarLayout = true,
+        configuration = {
+            autoSave = launchConfig == nil,
+            autoLoad = launchConfig == nil,
+            fileName = "MewMewHubUI",
+        },
+    })
+else
+    createFallbackGui()
 end
 
-automatic:CreateDropdown({
-    name = "Gifts",
-    flag = "AutoOpenGiftTypes",
-    options = giftOptions,
-    multiSelect = true,
-    value = initialGifts,
-    callback = setGiftSelection,
-})
-if launchConfig then
-    setGiftSelection(initialGifts)
-end
-createToggle(automatic, "🎀 auto open gifts", "AutoOpenGifts")
+if window then
+    local main = window:CreateTab({ name = "Mew Home" })
+    local farm = window:CreateTab({ name = "Mew Farm" })
+    local optimize = window:CreateTab({ name = "Mew Optimize" })
+    local eventTab = window:CreateTab({ name = "Mew Event" })
+    local mail = window:CreateTab({ name = "Mew Mail" })
+    local trading = window:CreateTab({ name = "Mew Trade" })
+    local rank = window:CreateTab({ name = "Mew Rank" })
+    local automatic = window:CreateTab({ name = "Mew Auto" })
+    local settings = window:CreateTab({ name = "Mew Settings" })
 
-settings:CreateSection({ name = "Preferences" })
-settings:CreateInput({
-    name = "Hub Name",
-    flag = "HubName",
-    value = "Mew Mew Hub",
-    placeholder = "Mew Mew Hub",
-})
-settings:CreateToggle({
-    name = "✨ Enable Anti-AFK",
-    flag = "AntiAFK",
-    value = true,
-    callback = function(enabled)
-        if enabled then
-            if environment.RobloxHubAntiAfkJob then
-                pcall(task.cancel, environment.RobloxHubAntiAfkJob)
+    local function createToggle(tab, name, flag)
+        local initial = launchToggles[flag] == true
+        local applied = false
+        local function apply(enabled)
+            local feature = features[flag]
+            if feature and (not launchConfig or applied ~= enabled) then
+                applied = enabled
+                feature.duy(enabled, features)
             end
-            environment.RobloxHubAntiAfkJob = task.spawn(function()
-                local player = game:GetService("Players").LocalPlayer
-                while true do
-                    task.wait(12 * 60)
-                    local character = player.Character
-                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                    if humanoid and humanoid.Health > 0 then
-                        humanoid.Jump = true
-                    end
-                end
+        end
+
+        tab:CreateToggle({
+            name = name,
+            flag = flag,
+            value = initial,
+            callback = apply,
+        })
+
+        if initial then
+            table.insert(startupActions, function()
+                apply(true)
             end)
-        else
-            if environment.RobloxHubAntiAfkJob then
-                pcall(task.cancel, environment.RobloxHubAntiAfkJob)
-                environment.RobloxHubAntiAfkJob = nil
+        end
+    end
+
+    main:CreateSection({ name = "Quick Start" })
+    createToggle(main, "🐾 inf pet speed", "FarmInfinityPetSpeed")
+    createToggle(main, "⚡ fast farm", "FarmFastFarm")
+    createToggle(main, "✨ auto tap", "FarmAutoTap")
+    createToggle(main, "💎 auto claim orb", "FarmAutoCollectOrb")
+    createToggle(main, "📍 tele to best area", "FarmTeleToBestArea")
+    createToggle(main, "🌍 tele to best world", "FarmTeleToBestWorld")
+
+    farm:CreateSection({ name = "Farming" })
+    createToggle(farm, "🐾 inf pet speed", "FarmInfinityPetSpeed")
+    createToggle(farm, "⚡ fast farm", "FarmFastFarm")
+    createToggle(farm, "✨ auto tap", "FarmAutoTap")
+    createToggle(farm, "💎 auto claim orb, lootbox", "FarmAutoCollectOrb")
+    createToggle(farm, "📍 tele to best area", "FarmTeleToBestArea")
+    createToggle(farm, "🌍 tele to best world", "FarmTeleToBestWorld")
+    createToggle(farm, "🛒 auto buy next area", "FarmAutoBuyNextArea")
+
+    farm:CreateSection({ name = "Update Slot" })
+    createToggle(farm, "🦴 auto upd pet slot", "FarmAutoPetSlot")
+    createToggle(farm, "🥚 auto upd egg slot", "FarmAutoEggSlot")
+
+    optimize:CreateSection({ name = "Loot boxes" })
+    createToggle(optimize, "📦 disable loot boxes", "OptimizeDisableLootBoxes")
+    optimize:CreateSection({ name = "Dropped objects" })
+    createToggle(optimize, "🧹 disable objects", "OptimizeDisableObjects")
+    optimize:CreateSection({ name = "Combined" })
+    createToggle(optimize, "✨ super optimize", "OptimizeSuper")
+
+    eventTab:CreateSection({ name = "Event" })
+    createToggle(eventTab, "🎉 auto event reward", "EventAutoReward")
+    createToggle(eventTab, "🎁 auto collect event reward", "EventAutoCollect")
+
+    mail:CreateSection({ name = "Mail" })
+    createToggle(mail, "📬 auto claim mail", "MailAutoClaim")
+    mail:CreateInput({
+        name = "User Name",
+        flag = "MailUserName",
+        value = "",
+        placeholder = "...",
+    })
+
+    mail:CreateDropdown({
+        name = "Item Class",
+        flag = "ItemClass",
+        options = { "A", "B" },
+        multiSelect = true,
+        value = {},
+    })
+    mail:CreateDropdown({
+        name = "Item Name",
+        flag = "ItemName",
+        options = { "A", "B" },
+        multiSelect = true,
+        value = {},
+    })
+    createToggle(mail, "🎁 auto gift", "MailAutoGift")
+
+    trading:CreateSection({ name = "Booth Sniping" })
+    local boothSnipe = trading:CreateGroup({ direction = "column" })
+    boothSnipe:CreateSection({ name = "Săn món ở gian hàng" })
+
+    local boothSeller = trading:CreateGroup({ direction = "column" })
+    boothSeller:CreateSection({ name = "Bán ở gian hàng" })
+
+    rank:CreateSection({ name = "Rank" })
+    createToggle(rank, "🏆 auto claim rank reward", "RankAutoClaimReward")
+    rank:CreateSection({ name = "Auto quest" })
+    createToggle(rank, "📜 auto rank quest", "RankAutoQuest")
+    createToggle(rank, "📊 stats gui", "RankStatsGui")
+
+    automatic:CreateSection({ name = "Auto" })
+    createToggle(automatic, "🎁 auto claim free gift", "AutoClaimFreeGift")
+
+    local giftOptions = { "Gift Bag", "Large Gift Bag", "Mini Chest" }
+    local initialGifts = {}
+    if launchConfig and type(launchConfig.gifts) == "table" then
+        for _, id in ipairs(giftOptions) do
+            if table.find(launchConfig.gifts, id) then
+                table.insert(initialGifts, id)
             end
         end
-    end,
-})
+    end
+
+    local function setGiftSelection(values)
+        local feature = features.AutoOpenGifts
+        if feature then
+            feature.setSelection(values)
+        end
+    end
+
+    automatic:CreateDropdown({
+        name = "Gifts",
+        flag = "AutoOpenGiftTypes",
+        options = giftOptions,
+        multiSelect = true,
+        value = initialGifts,
+        callback = setGiftSelection,
+    })
+    if launchConfig then
+        setGiftSelection(initialGifts)
+    end
+    createToggle(automatic, "🎀 auto open gifts", "AutoOpenGifts")
+
+    settings:CreateSection({ name = "Preferences" })
+    settings:CreateInput({
+        name = "Hub Name",
+        flag = "HubName",
+        value = "Kaitun Mew Mew Hub",
+        placeholder = "Kaitun Mew Mew Hub",
+    })
+    settings:CreateToggle({
+        name = "✨ Enable Anti-AFK",
+        flag = "AntiAFK",
+        value = true,
+        callback = function(enabled)
+            if enabled then
+                if environment.RobloxHubAntiAfkJob then
+                    pcall(task.cancel, environment.RobloxHubAntiAfkJob)
+                end
+                environment.RobloxHubAntiAfkJob = task.spawn(function()
+                    local player = game:GetService("Players").LocalPlayer
+                    while true do
+                        task.wait(12 * 60)
+                        local character = player.Character
+                        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                        if humanoid and humanoid.Health > 0 then
+                            humanoid.Jump = true
+                        end
+                    end
+                end)
+            else
+                if environment.RobloxHubAntiAfkJob then
+                    pcall(task.cancel, environment.RobloxHubAntiAfkJob)
+                    environment.RobloxHubAntiAfkJob = nil
+                end
+            end
+        end,
+    })
+end
 
 for _, start in ipairs(startupActions) do
     start()
