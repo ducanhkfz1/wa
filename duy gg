@@ -22,6 +22,7 @@ for _, url in ipairs(urls) do
         features[flag] = feature
     end
 end
+
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/gen2"))()
 
 local window = Rayfield:CreateWindow({
@@ -30,19 +31,19 @@ local window = Rayfield:CreateWindow({
     configuration = {
         autoSave = launchConfig == nil,
         autoLoad = launchConfig == nil,
-        fileName = "RobloxHubUI",
+        fileName = "MewMewHubUI",
     },
 })
 
-window:CreateTab({ name = "Stats" })
-local farm = window:CreateTab({ name = "farm" })
-local optimize = window:CreateTab({ name = "optimize" })
-window:CreateTab({ name = "Event" })
-local mail = window:CreateTab({ name = "mail" })
-local trading = window:CreateTab({ name = "trading" })
-local rank = window:CreateTab({ name = "rank" })
-local automatic = window:CreateTab({ name = "automatic" })
-window:CreateTab({ name = "setting" })
+local main = window:CreateTab({ name = "Main" })
+local farm = window:CreateTab({ name = "Farm" })
+local optimize = window:CreateTab({ name = "Optimize" })
+local eventTab = window:CreateTab({ name = "Event" })
+local mail = window:CreateTab({ name = "Mail" })
+local trading = window:CreateTab({ name = "Trading" })
+local rank = window:CreateTab({ name = "Rank" })
+local automatic = window:CreateTab({ name = "Automatic" })
+local settings = window:CreateTab({ name = "Settings" })
 
 local function createToggle(tab, name, flag)
     local initial = launchToggles[flag] == true
@@ -61,9 +62,23 @@ local function createToggle(tab, name, flag)
         value = initial,
         callback = apply,
     })
-    if initial then table.insert(startupActions, function() apply(true) end) end
+
+    if initial then
+        table.insert(startupActions, function()
+            apply(true)
+        end)
+    end
 end
 
+main:CreateSection({ name = "Quick Start" })
+createToggle(main, "inf pet speed", "FarmInfinityPetSpeed")
+createToggle(main, "fast farm", "FarmFastFarm")
+createToggle(main, "auto tap", "FarmAutoTap")
+createToggle(main, "auto claim orb", "FarmAutoCollectOrb")
+createToggle(main, "tele to best area", "FarmTeleToBestArea")
+createToggle(main, "tele to best world", "FarmTeleToBestWorld")
+
+farm:CreateSection({ name = "Farm" })
 createToggle(farm, "inf pet speed", "FarmInfinityPetSpeed")
 createToggle(farm, "fast farm", "FarmFastFarm")
 createToggle(farm, "auto tap", "FarmAutoTap")
@@ -72,7 +87,7 @@ createToggle(farm, "tele to best area", "FarmTeleToBestArea")
 createToggle(farm, "tele to best world", "FarmTeleToBestWorld")
 createToggle(farm, "auto buy next area", "FarmAutoBuyNextArea")
 
-farm:CreateSection({ name = "upd slot" })
+farm:CreateSection({ name = "Update Slot" })
 createToggle(farm, "auto upd pet slot", "FarmAutoPetSlot")
 createToggle(farm, "auto upd egg slot", "FarmAutoEggSlot")
 
@@ -83,6 +98,11 @@ createToggle(optimize, "disable objects", "OptimizeDisableObjects")
 optimize:CreateSection({ name = "Combined" })
 createToggle(optimize, "super optimize", "OptimizeSuper")
 
+eventTab:CreateSection({ name = "Events" })
+createToggle(eventTab, "auto event reward", "EventAutoReward")
+createToggle(eventTab, "auto collect event reward", "EventAutoCollect")
+
+mail:CreateSection({ name = "Mail" })
 createToggle(mail, "auto claim mail", "MailAutoClaim")
 mail:CreateInput({
     name = "User Name",
@@ -91,7 +111,6 @@ mail:CreateInput({
     placeholder = "...",
 })
 
--- Các lựa chọn mẫu để thử lưu cấu hình. Thay bằng dữ liệu trong game khi có.
 mail:CreateDropdown({
     name = "Item Class",
     flag = "ItemClass",
@@ -108,29 +127,37 @@ mail:CreateDropdown({
 })
 createToggle(mail, "auto gift", "MailAutoGift")
 
+trading:CreateSection({ name = "Săn món ở gian hàng" })
 local boothSnipe = trading:CreateGroup({ direction = "column" })
 boothSnipe:CreateSection({ name = "Săn món ở gian hàng" })
 
 local boothSeller = trading:CreateGroup({ direction = "column" })
 boothSeller:CreateSection({ name = "Bán ở gian hàng" })
 
+rank:CreateSection({ name = "Rank" })
 createToggle(rank, "auto claim rank reward", "RankAutoClaimReward")
-rank:CreateSection({ name = "auto quest" })
+rank:CreateSection({ name = "Auto quest" })
 createToggle(rank, "auto rank quest", "RankAutoQuest")
 createToggle(rank, "stats gui", "RankStatsGui")
 
+automatic:CreateSection({ name = "Auto" })
 createToggle(automatic, "auto claim free gift", "AutoClaimFreeGift")
 
 local giftOptions = { "Gift Bag", "Large Gift Bag", "Mini Chest" }
 local initialGifts = {}
 if launchConfig and type(launchConfig.gifts) == "table" then
     for _, id in ipairs(giftOptions) do
-        if table.find(launchConfig.gifts, id) then table.insert(initialGifts, id) end
+        if table.find(launchConfig.gifts, id) then
+            table.insert(initialGifts, id)
+        end
     end
 end
+
 local function setGiftSelection(values)
     local feature = features.AutoOpenGifts
-    if feature then feature.setSelection(values) end
+    if feature then
+        feature.setSelection(values)
+    end
 end
 
 automatic:CreateDropdown({
@@ -141,10 +168,51 @@ automatic:CreateDropdown({
     value = initialGifts,
     callback = setGiftSelection,
 })
-if launchConfig then setGiftSelection(initialGifts) end
+if launchConfig then
+    setGiftSelection(initialGifts)
+end
 createToggle(automatic, "auto open gifts", "AutoOpenGifts")
 
-for _, start in ipairs(startupActions) do start() end
+settings:CreateSection({ name = "Preferences" })
+settings:CreateInput({
+    name = "Hub Name",
+    flag = "HubName",
+    value = "Mew Mew Hub",
+    placeholder = "Mew Mew Hub",
+})
+settings:CreateToggle({
+    name = "Enable Anti-AFK",
+    flag = "AntiAFK",
+    value = true,
+    callback = function(enabled)
+        if enabled then
+            if environment.RobloxHubAntiAfkJob then
+                pcall(task.cancel, environment.RobloxHubAntiAfkJob)
+            end
+            environment.RobloxHubAntiAfkJob = task.spawn(function()
+                local player = game:GetService("Players").LocalPlayer
+                while true do
+                    task.wait(12 * 60)
+                    local character = player.Character
+                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.Health > 0 then
+                        humanoid.Jump = true
+                    end
+                end
+            end)
+        else
+            if environment.RobloxHubAntiAfkJob then
+                pcall(task.cancel, environment.RobloxHubAntiAfkJob)
+                environment.RobloxHubAntiAfkJob = nil
+            end
+        end
+    end,
+})
+
+for _, start in ipairs(startupActions) do
+    start()
+end
+
 if environment.RobloxHubAntiAfkJob then
     pcall(task.cancel, environment.RobloxHubAntiAfkJob)
 end
@@ -159,4 +227,3 @@ environment.RobloxHubAntiAfkJob = task.spawn(function()
         end
     end
 end)
-
