@@ -1,0 +1,204 @@
+-- Mew Mew Hub - Simple UI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MewMewHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.new(0, 420, 0, 560)
+main.Position = UDim2.new(0.5, -210, 0.5, -280)
+main.BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+main.BorderSizePixel = 0
+main.Parent = ScreenGui
+
+local round = Instance.new("UICorner")
+round.CornerRadius = UDim.new(0, 24)
+round.Parent = main
+
+local glow = Instance.new("Frame")
+glow.Size = UDim2.new(1, 0, 1, 0)
+glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+glow.BorderSizePixel = 0
+glow.BackgroundTransparency = 0.92
+glow.Parent = main
+
+local glowCorner = Instance.new("UICorner")
+glowCorner.CornerRadius = UDim.new(0, 24)
+glowCorner.Parent = glow
+
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1, 0, 0, 92)
+top.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+top.BorderSizePixel = 0
+top.Parent = main
+
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0, 24)
+topCorner.Parent = top
+
+local icon = Instance.new("TextLabel")
+icon.Size = UDim2.new(0, 40, 0, 40)
+icon.Position = UDim2.new(0, 18, 0, 25)
+icon.BackgroundTransparency = 1
+icon.Text = "◉"
+icon.Font = Enum.Font.GothamBlack
+icon.TextSize = 24
+icon.TextColor3 = Color3.fromRGB(255, 255, 255)
+icon.Parent = top
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -110, 0, 26)
+title.Position = UDim2.new(0, 72, 0, 18)
+title.BackgroundTransparency = 1
+title.Text = "Mew Mew Hub"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 21
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = top
+
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, -110, 0, 18)
+subtitle.Position = UDim2.new(0, 74, 0, 48)
+subtitle.BackgroundTransparency = 1
+subtitle.Text = "Status: ONLINE"
+subtitle.Font = Enum.Font.Gotham
+subtitle.TextSize = 11
+subtitle.TextColor3 = Color3.fromRGB(190, 190, 190)
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.Parent = top
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.new(0, 26, 0, 26)
+close.Position = UDim2.new(1, -38, 0, 18)
+close.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+close.Text = "X"
+close.Font = Enum.Font.GothamBold
+close.TextSize = 12
+close.TextColor3 = Color3.fromRGB(0, 0, 0)
+close.BorderSizePixel = 0
+close.Parent = top
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 10)
+closeCorner.Parent = close
+
+close.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+local body = Instance.new("ScrollingFrame")
+body.Size = UDim2.new(1, -20, 1, -112)
+body.Position = UDim2.new(0, 10, 0, 102)
+body.BackgroundTransparency = 1
+body.BorderSizePixel = 0
+body.ScrollBarThickness = 6
+body.CanvasSize = UDim2.new(0, 0, 0, 500)
+body.Parent = main
+
+local sectionNames = {
+    "Farm",
+    "Optimize",
+    "Mail",
+    "Rank",
+    "Auto",
+    "Settings"
+}
+
+local y = 0
+for _, name in ipairs(sectionNames) do
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, -8, 0, 46)
+    card.Position = UDim2.new(0, 4, 0, y)
+    card.BackgroundColor3 = Color3.fromRGB(36, 36, 39)
+    card.BorderSizePixel = 0
+    card.Parent = body
+
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 12)
+    cardCorner.Parent = card
+
+    local dot = Instance.new("Frame")
+    dot.Size = UDim2.new(0, 6, 0, 22)
+    dot.Position = UDim2.new(0, 14, 0.5, -11)
+    dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    dot.BorderSizePixel = 0
+    dot.Parent = card
+
+    local dotCorner = Instance.new("UICorner")
+    dotCorner.CornerRadius = UDim.new(0, 6)
+    dotCorner.Parent = dot
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -90, 1, 0)
+    label.Position = UDim2.new(0, 30, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.Font = Enum.Font.GothamSemibold
+    label.TextSize = 14
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = card
+
+    local toggle = Instance.new("TextButton")
+    toggle.Size = UDim2.new(0, 48, 0, 22)
+    toggle.Position = UDim2.new(1, -58, 0.5, -11)
+    toggle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    toggle.Text = "ON"
+    toggle.Font = Enum.Font.GothamBold
+    toggle.TextSize = 10
+    toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+    toggle.BorderSizePixel = 0
+    toggle.Parent = card
+
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 11)
+    toggleCorner.Parent = toggle
+
+    local enabled = true
+    toggle.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        toggle.Text = enabled and "ON" or "OFF"
+        toggle.BackgroundColor3 = enabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(90, 90, 95)
+        toggle.TextColor3 = enabled and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+    end)
+
+    y += 54
+end
+
+local dragging = false
+local dragStart
+local startPos
+
+local dragZone = Instance.new("TextButton")
+dragZone.Size = UDim2.new(1, 0, 0, 92)
+dragZone.Position = UDim2.new(0, 0, 0, 0)
+dragZone.BackgroundTransparency = 1
+dragZone.Text = ""
+dragZone.Parent = top
+
+dragZone.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
+    end
+end)
+
+dragZone.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+dragZone.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+print("Mew Mew Hub loaded")
