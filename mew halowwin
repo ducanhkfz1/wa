@@ -1,6 +1,6 @@
 local genv = (type(getgenv) == "function" and getgenv()) or _G
-if type(genv.VyHalloweenGames) == "table" and type(genv.VyHalloweenGames.Stop) == "function" then
-    pcall(genv.VyHalloweenGames.Stop)
+if type(genv.mew halowwin) == "table" and type(genv.mew halowwin.Stop) == "function" then
+    pcall(genv.mew halowwin.Stop)
     task.wait(0.3)
 end
 
