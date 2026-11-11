@@ -1,4 +1,4 @@
--- discord.gg/syncrypt
+-- https://discord.gg/R7f2ECUnvY
 
 local function geniter(f, s, c)
 	if type(f) ~= "function" then
