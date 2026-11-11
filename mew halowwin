@@ -142,7 +142,7 @@ local function notify(title, desc, dur)
         return
     end
     pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", { Title = "VY HUB - " .. tostring(title), Text = tostring(desc), Duration = dur or 5 })
+        game:GetService("StarterGui"):SetCore("SendNotification", { Title = "MEW HUB - " .. tostring(title), Text = tostring(desc), Duration = dur or 5 })
     end)
 end
 
@@ -3644,11 +3644,11 @@ local function sendPetWebhook(name, amount, data)
     local dir = webhookPetDir(data)
     local thumb = type(dir) == "table" and ((data.pt == 1 and dir.goldenThumbnail) or dir.thumbnail) or nil
     local payload = {
-        username = "VY HUB Notifier",
+        username = "MEW HUB Notifier",
         embeds = { {
             title = title,
-            description = string.format("**%s** just hatched a **%s** with VY HUB!", LocalPlayer.Name, name),
-            author = { name = "VY HUB" },
+            description = string.format("**%s** just hatched a **%s** with MEW HUB!", LocalPlayer.Name, name),
+            author = { name = "MEW HUB" },
             timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
             color = color,
             fields = {
@@ -3657,7 +3657,7 @@ local function sendPetWebhook(name, amount, data)
                 { name = "Game", value = "Pet Simulator 99 - Halloween Games", inline = true },
                 { name = "Hatched At", value = os.date("%H:%M:%S") .. " (local time)", inline = true },
             },
-            footer = { text = "VY HUB Notifier | " .. os.date("%Y-%m-%d %H:%M:%S") },
+            footer = { text = "MEW HUB Notifier | " .. os.date("%Y-%m-%d %H:%M:%S") },
         } },
     }
     local icon = petIconUrl(thumb)
@@ -3665,7 +3665,7 @@ local function sendPetWebhook(name, amount, data)
     webhookPost(payload)
 end
 local function sendTestWebhook()
-    return webhookPost({ username = "VY HUB Notifier", content = string.format("✅ VY HUB Halloween Games notifier started for **%s** (watching: %s)", LocalPlayer.Name, table.concat(F.webhookKeywords, ", ")) })
+    return webhookPost({ username = "MEW HUB Notifier", content = string.format("✅ MEW HUB Halloween Games notifier started for **%s** (watching: %s)", LocalPlayer.Name, table.concat(F.webhookKeywords, ", ")) })
 end
 local function webhookTick()
     if not F.webhookEnabled then V.webhookSeen = nil return end
@@ -3830,14 +3830,14 @@ pcall(function() isMobile = Library:IsMobileClient() end)
 K.MODE = eventAvailable() and "event" or "universal"
 
 UI.Window = Library:CreateWindow({
-    Name = "VY HUB",
+    Name = "MEW HUB",
     SubName = K.MODE == "event" and "Halloween Games" or "Universal",
     Logo = "ghost",
     ToggleButtonEnabled = isMobile,
     KeybindListEnabled = false,
     SettingsTabEnabled = true,
     WatermarkEnabled = true,
-    WatermarkText = K.MODE == "event" and "VY HUB | Halloween Games" or "VY HUB | Universal",
+    WatermarkText = K.MODE == "event" and "MEW HUB | Halloween Games" or "MEW HUB | Universal",
     Theme = "Onyx",
 })
 
@@ -3970,7 +3970,7 @@ UI.StartSec:AddToggle({ Name = "Universal Mode", Default = K.MODE == "universal"
 tip(UI.StartSec, "Universal Mode", K.MODE == "event" and "Farm, hatch, unlock zones and teleport in any other event instance you enter, not only the Halloween Games." or "The Halloween Games are not in this game version. Farming, eggs, zones and teleports work in whatever event instance you enter.")
 
 UI.CtrlSec = section(UI.MainTab, "Script")
-UI.CtrlSec:AddLabel("VY HUB Halloween Games v" .. K.VERSION .. "  |  Made By Vy  |  .gg/Fgaw3JZt6w")
+UI.CtrlSec:AddLabel("MEW HUB Halloween Games v" .. K.VERSION .. "  |  Made By Vy  |  .gg/Fgaw3JZt6w")
 UI.CtrlSec:AddButton({ Name = "Stop Script", Callback = function()
     if genv.VyHalloweenGames then genv.VyHalloweenGames.Stop() end
 end })
@@ -4339,17 +4339,17 @@ task.spawn(function()
             log("in the Halloween %s place: Auto Halloween Games is on", placeKind())
         end
         state.status = "in the Halloween " .. placeKind() .. " place"
-        notify("VY HUB", "Halloween Games: in the " .. placeKind() .. " place", 5)
+        notify("MEW HUB", "Halloween Games: in the " .. placeKind() .. " place", 5)
         return
     end
     if eventAvailable() then
         local ok, err = enterEvent()
         if ok then
             state.status = "inside the Halloween Games"
-            notify("VY HUB", "Halloween Games loaded - RightShift opens the menu", 6)
+            notify("MEW HUB", "Halloween Games loaded - RightShift opens the menu", 6)
         else
             state.status = "not inside the Halloween Games (" .. tostring(err) .. "): Universal Mode"
-            notify("VY HUB", "Could not enter the Halloween Games (" .. tostring(err) .. "). Universal Mode is on: enter any event instance", 8)
+            notify("MEW HUB", "Could not enter the Halloween Games (" .. tostring(err) .. "). Universal Mode is on: enter any event instance", 8)
             F.universalMode = true
             pcall(function() if Library.SetFlags and Library.SetFlags.hg_universal then Library.SetFlags.hg_universal(true) end end)
         end
@@ -4358,7 +4358,7 @@ task.spawn(function()
         F.universalMode = true
         pcall(function() if Library.SetFlags and Library.SetFlags.hg_universal then Library.SetFlags.hg_universal(true) end end)
         state.status = "event not found in this game version: Universal Mode"
-        notify("VY HUB", "Halloween Games not found: Universal Mode is on, enter any event instance", 8)
+        notify("MEW HUB", "Halloween Games not found: Universal Mode is on, enter any event instance", 8)
     end
 end)
 
