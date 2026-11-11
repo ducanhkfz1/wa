@@ -1,12 +1,12 @@
 local genv = (type(getgenv) == "function" and getgenv()) or _G
-if type(genv.mew halowwin) == "table" and type(genv.mew halowwin.Stop) == "function" then
-    pcall(genv.mew halowwin.Stop)
+if type(genv.VyHalloweenGames) == "table" and type(genv.VyHalloweenGames.Stop) == "function" then
+    pcall(genv.VyHalloweenGames.Stop)
     task.wait(0.3)
 end
 
 local K, V, G, UI, F = {}, {}, {}, {}, {}
 
-K.TAG = "[mew halowwin] "
+K.TAG = "[VY HalloweenGames] "
 K.VERSION = "1.8.0"
 K.INSTANCE_ID = "HalloweenGames"
 K.CURRENCY = "HalloweenGamesCoins"
@@ -327,9 +327,9 @@ local function dist(a, b)
     return (a - b).Magnitude
 end
 
-K.RUN_FILE = "mew halowwin.luau"
-K.LOADER_FILE = "mew halowwin/HG_Loader.json"
-K.RESUME_FILE = "mew halowwin/HG_Resume.json"
+K.RUN_FILE = "VY_HalloweenGames.luau"
+K.LOADER_FILE = "VYHUB/HG_Loader.json"
+K.RESUME_FILE = "VYHUB/HG_Resume.json"
 K.PLACE_KIND = { [140030158342766] = "lobby", [93869716229773] = "match", [8737899170] = "world", [16498369169] = "world", [17503543197] = "world", [140403681187145] = "world" }
 pcall(function()
     local PF = req("Library.Modules.PlaceFile", true)
@@ -1660,7 +1660,7 @@ local function goHome(why)
 end
 
 K.GAME_TICK = 0.12
-K.ROUND_LOG = "mew halowwin/HG_Rounds.log"
+K.ROUND_LOG = "VYHUB/HG_Rounds.log"
 K.LOGGED_ROUNDS = { BroomSweep = true, HotPumpkin = true, LightsOut = true, BumperPumpkins = true, PumpkinColors = true, TrickOrTreatDoors = true, TombstoneBridge = true, CoffinChairs = true, MonsterMash = true, ScarecrowStare = true }
 V.roundLogLines = 0
 local function roundLog(fmt, ...)
@@ -3830,7 +3830,7 @@ pcall(function() isMobile = Library:IsMobileClient() end)
 K.MODE = eventAvailable() and "event" or "universal"
 
 UI.Window = Library:CreateWindow({
-    Name = "mew halowwin",
+    Name = "VY HUB",
     SubName = K.MODE == "event" and "Halloween Games" or "Universal",
     Logo = "ghost",
     ToggleButtonEnabled = isMobile,
@@ -3970,9 +3970,9 @@ UI.StartSec:AddToggle({ Name = "Universal Mode", Default = K.MODE == "universal"
 tip(UI.StartSec, "Universal Mode", K.MODE == "event" and "Farm, hatch, unlock zones and teleport in any other event instance you enter, not only the Halloween Games." or "The Halloween Games are not in this game version. Farming, eggs, zones and teleports work in whatever event instance you enter.")
 
 UI.CtrlSec = section(UI.MainTab, "Script")
-UI.CtrlSec:AddLabel("mew Halloween Games v" .. K.VERSION .. "  |  Made By Vy  |  .gg/Fgaw3JZt6w")
+UI.CtrlSec:AddLabel("VY HUB Halloween Games v" .. K.VERSION .. "  |  Made By Vy  |  .gg/Fgaw3JZt6w")
 UI.CtrlSec:AddButton({ Name = "Stop Script", Callback = function()
-    if genv.mew halowwin then genv.mew halowwin.Stop() end
+    if genv.VyHalloweenGames then genv.VyHalloweenGames.Stop() end
 end })
 tip(UI.CtrlSec, "Stop Script", "Stops every feature and closes this menu.")
 
@@ -4282,7 +4282,7 @@ if type(G.HGCmds) == "table" then
     pcall(wrapNightSelect)
 end
 
-genv.mewHalloweenGames = {
+genv.VyHalloweenGames = {
     Stop = function()
         if not state.alive then return end
         state.alive = false
@@ -4339,17 +4339,17 @@ task.spawn(function()
             log("in the Halloween %s place: Auto Halloween Games is on", placeKind())
         end
         state.status = "in the Halloween " .. placeKind() .. " place"
-        notify("MEW HUB", "Halloween Games: in the " .. placeKind() .. " place", 5)
+        notify("VY HUB", "Halloween Games: in the " .. placeKind() .. " place", 5)
         return
     end
     if eventAvailable() then
         local ok, err = enterEvent()
         if ok then
             state.status = "inside the Halloween Games"
-            notify("MEW HUB", "Halloween Games loaded - RightShift opens the menu", 6)
+            notify("VY HUB", "Halloween Games loaded - RightShift opens the menu", 6)
         else
             state.status = "not inside the Halloween Games (" .. tostring(err) .. "): Universal Mode"
-            notify("MEW HUB", "Could not enter the Halloween Games (" .. tostring(err) .. "). Universal Mode is on: enter any event instance", 8)
+            notify("VY HUB", "Could not enter the Halloween Games (" .. tostring(err) .. "). Universal Mode is on: enter any event instance", 8)
             F.universalMode = true
             pcall(function() if Library.SetFlags and Library.SetFlags.hg_universal then Library.SetFlags.hg_universal(true) end end)
         end
@@ -4358,7 +4358,7 @@ task.spawn(function()
         F.universalMode = true
         pcall(function() if Library.SetFlags and Library.SetFlags.hg_universal then Library.SetFlags.hg_universal(true) end end)
         state.status = "event not found in this game version: Universal Mode"
-        notify("MEW HUB", "Halloween Games not found: Universal Mode is on, enter any event instance", 8)
+        notify("VY HUB", "Halloween Games not found: Universal Mode is on, enter any event instance", 8)
     end
 end)
 
