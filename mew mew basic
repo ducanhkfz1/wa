@@ -33,7 +33,7 @@ end
 
 local function createFallbackGui()
     local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "KaitunMewMewHub"
+    screenGui.Name = "MewMewHub"
     screenGui.ResetOnSpawn = false
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     screenGui.IgnoreGuiInset = true
@@ -41,178 +41,93 @@ local function createFallbackGui()
 
     local main = Instance.new("Frame")
     main.Name = "Main"
-    main.Size = UDim2.new(0, 440, 0, 560)
-    main.Position = UDim2.new(0.5, -220, 0.5, -280)
-    main.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+    main.Size = UDim2.new(0, 430, 0, 520)
+    main.Position = UDim2.new(0.5, -215, 0.5, -260)
+    main.BackgroundColor3 = Color3.fromRGB(20, 14, 30)
     main.BorderSizePixel = 0
     main.Parent = screenGui
 
-    local mainCorner = Instance.new("UICorner")
-    mainCorner.CornerRadius = UDim.new(0, 22)
-    mainCorner.Parent = main
-
-    local glow = Instance.new("Frame")
-    glow.Size = UDim2.new(1, 0, 1, 0)
-    glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    glow.BorderSizePixel = 0
-    glow.BackgroundTransparency = 0.94
-    glow.Parent = main
-    local glowCorner = Instance.new("UICorner")
-    glowCorner.CornerRadius = UDim.new(0, 22)
-    glowCorner.Parent = glow
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 18)
+    corner.Parent = main
 
     local top = Instance.new("Frame")
-    top.Size = UDim2.new(1, 0, 0, 100)
-    top.BackgroundColor3 = Color3.fromRGB(32, 32, 35)
+    top.Size = UDim2.new(1, 0, 0, 60)
+    top.BackgroundColor3 = Color3.fromRGB(40, 28, 56)
     top.BorderSizePixel = 0
     top.Parent = main
 
     local topCorner = Instance.new("UICorner")
-    topCorner.CornerRadius = UDim.new(0, 22)
+    topCorner.CornerRadius = UDim.new(0, 18)
     topCorner.Parent = top
 
-    local topGradient = Instance.new("UIGradient")
-    topGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 180, 180)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 70, 75))
-    })
-    topGradient.Rotation = 55
-    topGradient.Parent = top
-
-    local icon = Instance.new("TextLabel")
-    icon.Size = UDim2.new(0, 50, 0, 50)
-    icon.Position = UDim2.new(0, 18, 0, 25)
-    icon.BackgroundTransparency = 1
-    icon.Text = "◉"
-    icon.Font = Enum.Font.GothamBlack
-    icon.TextSize = 26
-    icon.TextColor3 = Color3.fromRGB(255, 255, 255)
-    icon.Parent = top
-
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -110, 0, 26)
-    title.Position = UDim2.new(0, 82, 0, 22)
+    title.Size = UDim2.new(1, -80, 0, 32)
+    title.Position = UDim2.new(0, 20, 0, 15)
     title.BackgroundTransparency = 1
-    title.Text = "Kaitun Mew Mew Hub"
+    title.Text = "Mew Mew Hub"
     title.Font = Enum.Font.GothamBold
-    title.TextSize = 19
+    title.TextSize = 18
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = top
 
-    local subtitle = Instance.new("TextLabel")
-    subtitle.Size = UDim2.new(1, -110, 0, 18)
-    subtitle.Position = UDim2.new(0, 84, 0, 48)
-    subtitle.BackgroundTransparency = 1
-    subtitle.Text = "Status: ONLINE • Black & White"
-    subtitle.Font = Enum.Font.Gotham
-    subtitle.TextSize = 11
-    subtitle.TextColor3 = Color3.fromRGB(220, 220, 220)
-    subtitle.TextXAlignment = Enum.TextXAlignment.Left
-    subtitle.Parent = top
-
-    local close = Instance.new("TextButton")
-    close.Size = UDim2.new(0, 30, 0, 30)
-    close.Position = UDim2.new(1, -42, 0, 16)
-    close.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    close.Text = "X"
-    close.Font = Enum.Font.GothamBold
-    close.TextSize = 15
-    close.TextColor3 = Color3.fromRGB(0, 0, 0)
-    close.BorderSizePixel = 0
-    close.Parent = top
-
-    local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0, 12)
-    closeCorner.Parent = close
+    local status = Instance.new("TextLabel")
+    status.Size = UDim2.new(1, -20, 0, 20)
+    status.Position = UDim2.new(0, 20, 0, 38)
+    status.BackgroundTransparency = 1
+    status.Text = "Status: ONLINE"
+    status.Font = Enum.Font.Gotham
+    status.TextSize = 11
+    status.TextColor3 = Color3.fromRGB(177, 255, 185)
+    status.TextXAlignment = Enum.TextXAlignment.Left
+    status.Parent = top
 
     local body = Instance.new("ScrollingFrame")
-    body.Size = UDim2.new(1, -20, 1, -120)
-    body.Position = UDim2.new(0, 10, 0, 110)
+    body.Size = UDim2.new(1, -20, 1, -80)
+    body.Position = UDim2.new(0, 10, 0, 70)
     body.BackgroundTransparency = 1
     body.BorderSizePixel = 0
-    body.CanvasSize = UDim2.new(0, 0, 0, 900)
+    body.CanvasSize = UDim2.new(0, 0, 0, 600)
     body.ScrollBarThickness = 6
     body.Parent = main
 
-    local function addCard(label, y)
-        local card = Instance.new("Frame")
-        card.Size = UDim2.new(1, -12, 0, 48)
-        card.Position = UDim2.new(0, 6, 0, y)
-        card.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
-        card.BorderSizePixel = 0
-        card.Parent = body
+    local function addButton(text, y)
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(1, -20, 0, 40)
+        button.Position = UDim2.new(0, 10, 0, y)
+        button.BackgroundColor3 = Color3.fromRGB(90, 70, 120)
+        button.Text = text
+        button.Font = Enum.Font.GothamSemibold
+        button.TextSize = 14
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.BorderSizePixel = 0
+        button.Parent = body
 
-        local cardCorner = Instance.new("UICorner")
-        cardCorner.CornerRadius = UDim.new(0, 14)
-        cardCorner.Parent = card
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 12)
+        corner.Parent = button
 
-        local mark = Instance.new("Frame")
-        mark.Size = UDim2.new(0, 6, 0, 24)
-        mark.Position = UDim2.new(0, 14, 0.5, -12)
-        mark.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        mark.BorderSizePixel = 0
-        mark.Parent = card
-
-        local markCorner = Instance.new("UICorner")
-        markCorner.CornerRadius = UDim.new(0, 6)
-        markCorner.Parent = mark
-
-        local titleCard = Instance.new("TextLabel")
-        titleCard.Size = UDim2.new(1, -90, 1, 0)
-        titleCard.Position = UDim2.new(0, 30, 0, 0)
-        titleCard.BackgroundTransparency = 1
-        titleCard.Text = label
-        titleCard.Font = Enum.Font.GothamSemibold
-        titleCard.TextSize = 14
-        titleCard.TextColor3 = Color3.fromRGB(255, 255, 255)
-        titleCard.TextXAlignment = Enum.TextXAlignment.Left
-        titleCard.Parent = card
-
-        local switch = Instance.new("TextButton")
-        switch.Size = UDim2.new(0, 52, 0, 24)
-        switch.Position = UDim2.new(1, -64, 0.5, -12)
-        switch.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        switch.Text = "ON"
-        switch.Font = Enum.Font.GothamBold
-        switch.TextSize = 11
-        switch.TextColor3 = Color3.fromRGB(0, 0, 0)
-        switch.BorderSizePixel = 0
-        switch.Parent = card
-
-        local switchCorner = Instance.new("UICorner")
-        switchCorner.CornerRadius = UDim.new(0, 12)
-        switchCorner.Parent = switch
-
-        local state = true
-        switch.MouseButton1Click:Connect(function()
-            state = not state
-            switch.Text = state and "ON" or "OFF"
-            switch.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(80, 80, 85)
-            switch.TextColor3 = state and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
-        end)
-
-        return card
+        return button
     end
 
-    local sections = {
-        "Farm",
-        "Optimize",
-        "Mail",
-        "Rank",
-        "Auto",
-        "Settings",
-    }
-
     local y = 0
-    for _, label in ipairs(sections) do
-        addCard(label, y)
-        y += 58
+    for _, label in ipairs({
+        "Farm", "Optimize", "Mail", "Rank", "Auto", "Settings"
+    }) do
+        local btn = addButton(label, y)
+        y += 48
+        btn.MouseButton1Click:Connect(function()
+            if btn.Text == "Farm" then
+                btn.Text = "Farm - ON"
+            elseif btn.Text == "Farm - ON" then
+                btn.Text = "Farm"
+            end
+        end)
     end
 
     local drag = Instance.new("TextButton")
-    drag.Size = UDim2.new(1, 0, 0, 100)
+    drag.Size = UDim2.new(1, 0, 0, 60)
     drag.Position = UDim2.new(0, 0, 0, 0)
     drag.BackgroundTransparency = 1
     drag.Text = ""
@@ -240,17 +155,13 @@ local function createFallbackGui()
         end
     end)
 
-    close.MouseButton1Click:Connect(function()
-        screenGui:Destroy()
-    end)
-
     return screenGui
 end
 
 local window = nil
 if Rayfield then
     window = Rayfield:CreateWindow({
-        name = "Kaitun Mew Mew Hub",
+        name = "Mew Mew Hub",
         sidebarLayout = true,
         configuration = {
             autoSave = launchConfig == nil,
@@ -405,8 +316,8 @@ if window then
     settings:CreateInput({
         name = "Hub Name",
         flag = "HubName",
-        value = "Kaitun Mew Mew Hub",
-        placeholder = "Kaitun Mew Mew Hub",
+        value = "Mew Mew Hub",
+        placeholder = "Mew Mew Hub",
     })
     settings:CreateToggle({
         name = "✨ Enable Anti-AFK",
