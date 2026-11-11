@@ -1,6 +1,6 @@
 local genv = (type(getgenv) == "function" and getgenv()) or _G
-if genv.DucanhHalloweenGames_Running then return end
-genv.DucanhHalloweenGames_Running = true
+if genv.TungductamHalloweenGames_Running then return end
+genv.TungductamHalloweenGames_Running = true
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,7 +11,7 @@ local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
-local resumeSettings = type(genv.DucanhHalloweenGames_Resume) == "table" and genv.XuantamHalloweenGames_Resume or nil
+local resumeSettings = type(genv.TungductamHalloweenGames_Resume) == "table" and genv.XuantamHalloweenGames_Resume or nil
 local state = { alive = true, gamesNote = "Waiting...", movingTo = nil }
 local V = { g = { round = nil, spoof = false, spoofInstalled = false, enabledFor = nil } }
 local R = {}
@@ -23,10 +23,10 @@ if resumeSettings then
         if type(resumeSettings[key]) == "boolean" then Flags[key] = resumeSettings[key] end
     end
 end
-genv.DucanhHalloweenGames_Resume = nil
+genv.TungductamHalloweenGames_Resume = nil
 
 -- ==========================================
--- 1. DUCANH FIX LAG UI & PERFORMANCE CORE
+-- 1. Tungductam FIX LAG UI & PERFORMANCE CORE
 -- ==========================================
 pcall(function()
     if CoreGui:FindFirstChild("XuantamFixLagUI") then 
@@ -35,7 +35,7 @@ pcall(function()
 end)
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DucanhFixLagUI"
+ScreenGui.Name = "TungductamFixLagUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
@@ -73,7 +73,7 @@ local function createLabel(pos, text, size, isBold)
     return lbl
 end
 
-createLabel(UDim2.new(0, 10, 0, 8), "⚡ DUCANH | KAITUN NGẦM 🚀", 20, true)
+createLabel(UDim2.new(0, 10, 0, 8), "⚡ Tungductam | KAITUN NGẦM 🚀", 20, true)
 createLabel(UDim2.new(0, 10, 0, 32), "👤 Tên: " .. LocalPlayer.DisplayName, 18, false)
 local FpsLabel = createLabel(UDim2.new(0, 10, 0, 52), "⚡ FPS: Đang tính...", 18, false)
 local TimeLabel = createLabel(UDim2.new(0, 10, 0, 72), "⏰ Giờ: 00:00:00", 18, false)
@@ -2009,4 +2009,4 @@ task.spawn(function()
     end
 end)
 
-print("⚡ DUCANH HUB FULLY LOADED WITH AUTO JOIN & KAITUN OPTIMIZATION!")
+print("⚡ Tungductam HUB FULLY LOADED WITH AUTO JOIN & KAITUN OPTIMIZATION!")
