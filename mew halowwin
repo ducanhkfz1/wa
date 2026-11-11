@@ -6,7 +6,7 @@ end
 
 local K, V, G, UI, F = {}, {}, {}, {}, {}
 
-K.TAG = "[VY HalloweenGames] "
+K.TAG = "[mew halowwin] "
 K.VERSION = "1.8.0"
 K.INSTANCE_ID = "HalloweenGames"
 K.CURRENCY = "HalloweenGamesCoins"
