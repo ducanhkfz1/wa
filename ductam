@@ -73,7 +73,7 @@ local function createLabel(pos, text, size, isBold)
     return lbl
 end
 
-createLabel(UDim2.new(0, 10, 0, 8), "⚡ XUANTAM | KAITUN NGẦM 🚀", 20, true)
+createLabel(UDim2.new(0, 10, 0, 8), "⚡ DUCANH | KAITUN NGẦM 🚀", 20, true)
 createLabel(UDim2.new(0, 10, 0, 32), "👤 Tên: " .. LocalPlayer.DisplayName, 18, false)
 local FpsLabel = createLabel(UDim2.new(0, 10, 0, 52), "⚡ FPS: Đang tính...", 18, false)
 local TimeLabel = createLabel(UDim2.new(0, 10, 0, 72), "⏰ Giờ: 00:00:00", 18, false)
