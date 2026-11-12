@@ -19,7 +19,15 @@ local Config = {
 
     -- Trick consumables usage
     AutoUseLuckyCharm = true,
+    AutoUseTreatMagnet = true,
+    AutoUseBroomstick = true,
+    AutoUseLantern = true,
     AutoUseLanternInFinal = true,
+    AutoUseTreatBoost = true,
+
+    -- Auto Open Midnight Gifts
+    AutoOpenMidnightGifts = true,
+    LobbyOpenGiftsDelay = 6.0,
 
     -- Auto enter HalloweenGames instance portal if currently in main world
     AutoEnterInstance = true,
@@ -59,12 +67,22 @@ local State = {
     LastExitAt = 0,
     LastPortalEnterAt = os.clock() + 12.0,
     LastLobbyJoinAt = 0,
+    LobbyArrivedAt = nil,
     LastOptimizeAt = 0,
     EngineOptimized = false,
     OptHooksInstalled = false,
     CurrentNightId = nil,
     LuckyCharmUsedNightId = nil,
     LanternUsedRoundId = nil,
+    TreatMagnetUsedRoundId = nil,
+    BroomstickUsedNightId = nil,
+    LastReportedNightId = nil,
+    PreMatchGiftsCount = nil,
+    LastGiftOpenAt = 0,
+    LastTreatBoostAt = 0,
+    LootboxAnimHooked = false,
+    KnownHugePetUIDs = {},
+    LastTrickUsedAt = {},
 
     Round = {
         Id = nil,
@@ -256,26 +274,183 @@ local function resetRoundState(roundId, arena, info)
     r.ScarecrowFinished = false
 end
 
--- Check if player owns a specific Trick consumable in Save inventory
-local function hasTrickItem(itemId)
-    local m = getModules()
-    if not (m and m.Save) then
-        return false
+-- Retrieve player's Save data across Match place, Queue Lobby, and World 1
+local function getSaveData()
+    local lib = ReplicatedStorage:FindFirstChild("Library")
+    local clientFolder = lib and lib:FindFirstChild("Client")
+    local saveMod = clientFolder and clientFolder:FindFirstChild("Save")
+    if saveMod then
+        local ok, s = pcall(require, saveMod)
+        if ok and s then
+            local lp = Players.LocalPlayer
+            if type(s.Get) == "function" then
+                local okD, d = pcall(s.Get, lp)
+                if okD and type(d) == "table" then
+                    return d
+                end
+                local okD2, d2 = pcall(s.Get)
+                if okD2 and type(d2) == "table" then
+                    return d2
+                end
+            end
+            if type(s.GetSaves) == "function" then
+                local okS, saves = pcall(s.GetSaves)
+                if okS and type(saves) == "table" then
+                    if lp and type(saves[lp.Name]) == "table" then
+                        return saves[lp.Name]
+                    elseif lp and type(saves[lp]) == "table" then
+                        return saves[lp]
+                    end
+                end
+            end
+        end
     end
-    local ok, data = pcall(m.Save.Get)
-    if not (ok and type(data) == "table" and type(data.Inventory) == "table") then
-        return false
+    return nil
+end
+
+local function getTrickHudButton(trickKey)
+    local lp = Players.LocalPlayer
+    local pgui = lp and lp:FindFirstChildOfClass("PlayerGui")
+    local hud = pgui and pgui:FindFirstChild("_INSTANCES") and pgui._INSTANCES:FindFirstChild("HalloweenGamesHud")
+    local tricks = hud and hud:FindFirstChild("Tricks")
+    return tricks and tricks:FindFirstChild(trickKey)
+end
+
+local function getTrickCount(trickKey)
+    local btn = getTrickHudButton(trickKey)
+    if btn then
+        local cntLabel = btn:FindFirstChild("Count")
+        if cntLabel and cntLabel:IsA("TextLabel") then
+            local num = tonumber(string.match(cntLabel.Text, "%d+"))
+            if num then
+                return num
+            end
+        end
     end
-    local misc = data.Inventory.Misc or data.Inventory.Consumable
-    if type(misc) ~= "table" then
-        return false
-    end
-    for _, item in pairs(misc) do
-        if type(item) == "table" and item.id == itemId and (tonumber(item._am) or 1) > 0 then
+    return 0
+end
+
+local function isTrickArmed(trickKey)
+    local btn = getTrickHudButton(trickKey)
+    if btn then
+        local stLabel = btn:FindFirstChild("State")
+        if stLabel and stLabel:IsA("TextLabel") and (stLabel.Text == "Armed!" or stLabel.Text == "Active!") then
             return true
         end
     end
     return false
+end
+
+local function isTrickReady(trickKey)
+    local btn = getTrickHudButton(trickKey)
+    if btn then
+        local stLabel = btn:FindFirstChild("State")
+        if stLabel and stLabel:IsA("TextLabel") then
+            if stLabel.Text == "Off" then
+                return false
+            end
+            if stLabel.Text == "Ready!" or stLabel.Text == "" then
+                return true
+            end
+        end
+    end
+    return true
+end
+
+local TRICK_NAME_MAP = {
+    LuckyCharm = "Halloween Games Lucky Charm",
+    TreatMagnet = "Halloween Games Treat Magnet",
+    Broomstick = "Halloween Games Broomstick",
+    Lantern = "Halloween Games Lantern",
+    Flashlight = "Halloween Games Lantern",
+    ["Halloween Games Lucky Charm"] = "Halloween Games Lucky Charm",
+    ["Halloween Games Treat Magnet"] = "Halloween Games Treat Magnet",
+    ["Halloween Games Broomstick"] = "Halloween Games Broomstick",
+    ["Halloween Games Lantern"] = "Halloween Games Lantern",
+}
+
+-- Check if player owns a specific Trick consumable via HUD count, Consumable inventory, or Misc inventory
+local function hasTrickItem(trickKeyOrId)
+    local hudCount = getTrickCount(trickKeyOrId)
+    if hudCount > 0 then
+        return true
+    end
+
+    local fullName = TRICK_NAME_MAP[trickKeyOrId] or trickKeyOrId
+    local save = getSaveData()
+    if save and type(save.Inventory) == "table" then
+        local function scanFolder(folder)
+            if type(folder) == "table" then
+                for _, item in pairs(folder) do
+                    if type(item) == "table" and (item.id == fullName or item.id == trickKeyOrId) then
+                        if (tonumber(item._am) or 1) > 0 then
+                            return true
+                        end
+                    end
+                end
+            end
+            return false
+        end
+        if scanFolder(save.Inventory.Consumable) or scanFolder(save.Inventory.Misc) then
+            return true
+        end
+    end
+
+    return false
+end
+
+-- Automatically activate any trick buff that the game HUD marks as "Ready!"
+local function autoUseReadyTricks(nightMod)
+    if not (nightMod and type(nightMod.Trick) == "function") then
+        return
+    end
+    local lp = Players.LocalPlayer
+    local pgui = lp and lp:FindFirstChildOfClass("PlayerGui")
+    local hud = pgui and pgui:FindFirstChild("_INSTANCES") and pgui._INSTANCES:FindFirstChild("HalloweenGamesHud")
+    local tricksFolder = hud and hud:FindFirstChild("Tricks")
+    if not tricksFolder then
+        return
+    end
+
+    local now = os.clock()
+    for _, btn in ipairs(tricksFolder:GetChildren()) do
+        if btn:IsA("GuiObject") and btn.Visible then
+            local trickKey = btn.Name
+            local stateLabel = btn:FindFirstChild("State")
+            local countLabel = btn:FindFirstChild("Count")
+            local stateText = stateLabel and stateLabel:IsA("TextLabel") and stateLabel.Text or ""
+            local count = countLabel and countLabel:IsA("TextLabel") and tonumber(string.match(countLabel.Text, "%d+")) or 0
+
+            if stateText == "Ready!" and (count > 0 or hasTrickItem(trickKey)) then
+                local shouldRun = false
+                if trickKey == "LuckyCharm" and Config.AutoUseLuckyCharm then
+                    shouldRun = true
+                elseif trickKey == "TreatMagnet" and Config.AutoUseTreatMagnet then
+                    shouldRun = true
+                elseif trickKey == "Broomstick" and Config.AutoUseBroomstick then
+                    shouldRun = true
+                elseif (trickKey == "Lantern" or trickKey == "Flashlight") and (Config.AutoUseLantern or Config.AutoUseLanternInFinal) then
+                    shouldRun = true
+                end
+
+                if shouldRun then
+                    local lastUsed = State.LastTrickUsedAt[trickKey] or 0
+                    if (now - lastUsed) > 1.5 then
+                        State.LastTrickUsedAt[trickKey] = now
+                        local targetName = (trickKey == "Flashlight") and "Lantern" or trickKey
+                        log("Auto-using ready buff: " .. targetName)
+                        task.spawn(function()
+                            pcall(nightMod.Trick, targetName)
+                        end)
+                        local firesig = firesignal or fire_signal
+                        if type(firesig) == "function" then
+                            pcall(firesig, btn.Activated)
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- Ensure internal Autopilot upvalue on LightsOut is disabled (nil) so our custom solver controls movement
@@ -1688,11 +1863,10 @@ local function stepTrickOrTreatDoors(nightMod)
         return
     end
 
-    local m = getModules()
-    if Config.AutoUseLanternInFinal and m and m.HalloweenGames and r.DoorPhase == "pick" then
+    if Config.AutoUseLanternInFinal and r.DoorPhase == "pick" then
         local nState = nightMod.State()
         local waveKey = tostring(nState.roundId) .. "_" .. tostring(r.DoorWave)
-        if State.LanternUsedRoundId ~= waveKey and hasTrickItem(m.HalloweenGames.TRICKS.Lantern) then
+        if State.LanternUsedRoundId ~= waveKey and hasTrickItem("Lantern") then
             State.LanternUsedRoundId = waveKey
             log("Using Lantern in TrickOrTreatDoors")
             nightMod.Trick("Lantern")
@@ -2073,6 +2247,159 @@ local function selectBestNight(nightMod, nightSelectMod)
     end
 end
 
+-- ============================================================================
+-- AUTO OPEN MIDNIGHT GIFTS & AUTO BOOSTS
+-- ============================================================================
+local function isDedicatedMatchPlace()
+    return game.PlaceId == 93869716229773 or game.PlaceId == 82075097396409
+end
+
+local function getMidnightGiftsCount()
+    local save = getSaveData()
+    local lootboxes = save and save.Inventory and save.Inventory.Lootbox
+    if not lootboxes then return 0 end
+    local total = 0
+    for _, item in pairs(lootboxes) do
+        if item.id == "Midnight Gift" then
+            total = total + (tonumber(item._am) or 1)
+        end
+    end
+    return total
+end
+
+local function syncKnownHugePets()
+    local save = getSaveData()
+    local pets = save and save.Inventory and save.Inventory.Pet
+    if not pets then return end
+    for uid, petData in pairs(pets) do
+        if petData.id == "Huge Neon Skeleton Dino" then
+            State.KnownHugePetUIDs[uid] = true
+        end
+    end
+end
+
+local function checkForNewHugePets()
+    local save = getSaveData()
+    local pets = save and save.Inventory and save.Inventory.Pet
+    if not pets then return end
+
+    for uid, petData in pairs(pets) do
+        if petData.id == "Huge Neon Skeleton Dino" and not State.KnownHugePetUIDs[uid] then
+            State.KnownHugePetUIDs[uid] = true
+            local pt = tonumber(petData.pt) or 0
+            local isShiny = (petData.sh == true)
+            local variantName = "Regular"
+            local prefix = ""
+            local assetId = "80322911658458"
+
+            if pt == 1 and isShiny then
+                variantName = "Golden Shiny"
+                prefix = "Golden Shiny "
+                assetId = "81229016133497"
+            elseif pt == 2 and isShiny then
+                variantName = "Rainbow Shiny"
+                prefix = "Rainbow Shiny "
+                assetId = "80322911658458"
+            elseif pt == 1 then
+                variantName = "Golden"
+                prefix = "Golden "
+                assetId = "81229016133497"
+            elseif pt == 2 then
+                variantName = "Rainbow"
+                prefix = "Rainbow "
+                assetId = "80322911658458"
+            elseif isShiny then
+                variantName = "Shiny"
+                prefix = "Shiny "
+                assetId = "80322911658458"
+            end
+
+            local fullName = prefix .. "Huge Neon Skeleton Dino"
+            log("Huge Hatched: " .. fullName .. " (Asset: " .. assetId .. ")")
+        end
+    end
+end
+
+local function openMidnightGifts()
+    if not Config.AutoOpenMidnightGifts then
+        return false
+    end
+    if isDedicatedMatchPlace() then
+        return false
+    end
+    local now = os.clock()
+    if (now - State.LastGiftOpenAt) < 1.0 then
+        return false
+    end
+
+    local save = getSaveData()
+    local lootboxes = save and save.Inventory and save.Inventory.Lootbox
+    if not lootboxes then
+        return false
+    end
+
+    local network = ReplicatedStorage:FindFirstChild("Network")
+    local kxRelease = network and network:FindFirstChild("KX_Release")
+    if not (kxRelease and kxRelease:IsA("RemoteFunction")) then
+        return false
+    end
+
+    for uid, item in pairs(lootboxes) do
+        if item.id == "Midnight Gift" then
+            local count = tonumber(item._am) or 1
+            if count > 0 then
+                State.LastGiftOpenAt = now
+                local openAmount = math.min(count, 8)
+                log("Opening " .. tostring(openAmount) .. " Midnight Gifts (Remaining: " .. tostring(count) .. ")")
+                syncKnownHugePets()
+                local ok, res1, res2 = pcall(kxRelease.InvokeServer, kxRelease, uid, openAmount, nil)
+                log("Gift open result: ok=" .. tostring(ok) .. " res1=" .. tostring(res1) .. " res2=" .. tostring(res2))
+                task.wait(0.5)
+                checkForNewHugePets()
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function autoUsePostMatchBoost()
+    if not Config.AutoUseTreatBoost then
+        return
+    end
+    local now = os.clock()
+    if (now - State.LastTreatBoostAt) < 60.0 then
+        return
+    end
+    local save = getSaveData()
+    if not (save and save.Inventory) then return end
+
+    local network = ReplicatedStorage:FindFirstChild("Network")
+    local consumeRemote = network and network:FindFirstChild("Consumables_Consume")
+    if not (consumeRemote and consumeRemote:IsA("RemoteFunction")) then
+        return
+    end
+
+    local function scanAndConsume(folder)
+        if type(folder) ~= "table" then return false end
+        for uid, item in pairs(folder) do
+            if item.id == "Halloween Games Treat Boost" and (tonumber(item._am) or 1) > 0 then
+                State.LastTreatBoostAt = now
+                log("Using Treat Boost post-match")
+                task.spawn(function()
+                    pcall(consumeRemote.InvokeServer, consumeRemote, uid, 1)
+                end)
+                return true
+            end
+        end
+        return false
+    end
+
+    if not scanAndConsume(save.Inventory.Consumable) then
+        scanAndConsume(save.Inventory.Misc)
+    end
+end
+
 local function closeEliminatedScreenIfOpen(nightMod)
     local pgui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
     local instGui = pgui and pgui:FindFirstChild("_INSTANCES")
@@ -2110,6 +2437,25 @@ local function stepQueueLobby(hrp)
         return true
     end
 
+    if not State.LobbyArrivedAt then
+        State.LobbyArrivedAt = os.clock()
+        log("Entered Queue Lobby, delaying " .. tostring(Config.LobbyOpenGiftsDelay) .. "s to open gifts")
+    end
+
+    -- Open gifts in lobby before registering on pad so teleport does not interrupt opening
+    local giftsRemaining = getMidnightGiftsCount()
+    if Config.AutoOpenMidnightGifts and giftsRemaining > 0 then
+        openMidnightGifts()
+    end
+    autoUsePostMatchBoost()
+    checkForNewHugePets()
+
+    -- Delay before joining pad so gifts have time to open
+    local lobbyElapsed = os.clock() - State.LobbyArrivedAt
+    if Config.AutoOpenMidnightGifts and giftsRemaining > 0 and lobbyElapsed < Config.LobbyOpenGiftsDelay then
+        return true
+    end
+
     local padPos = innerPad:GetPivot().Position
     local safeRadius = math.max((innerPad.Size.X / 2) - 4, 6)
     local flatDist = Vector3.new(hrp.Position.X - padPos.X, 0, hrp.Position.Z - padPos.Z).Magnitude
@@ -2133,10 +2479,6 @@ local function stepQueueLobby(hrp)
     end
 
     return true
-end
-
-local function isDedicatedMatchPlace()
-    return game.PlaceId == 93869716229773 or game.PlaceId == 82075097396409
 end
 
 local function syncRoundFromNightState(activeModel, nState)
@@ -2213,6 +2555,7 @@ local function stepMainLoop()
     if stepQueueLobby(hrp) then
         return
     end
+    State.LobbyArrivedAt = nil
 
     -- 2. Check if inside HalloweenGames instance
     local activeModel = getActiveInstanceModel()
@@ -2245,6 +2588,10 @@ local function stepMainLoop()
     local inActiveNight = (nState.nightId ~= nil and nState.phase ~= "ended")
 
     if not inActiveNight then
+        openMidnightGifts()
+        autoUsePostMatchBoost()
+        checkForNewHugePets()
+
         closeEliminatedScreenIfOpen(nightMod)
 
         -- Recover if character is falling into void while waiting in match server
@@ -2299,6 +2646,11 @@ local function stepMainLoop()
     syncRoundFromNightState(activeModel, nState)
 
     -- Inside an active Night
+    if not State.PreMatchGiftsCount then
+        State.PreMatchGiftsCount = getMidnightGiftsCount()
+        syncKnownHugePets()
+    end
+
     local meContestant = nState.contestants and nState.me and nState.contestants[nState.me]
     local isEliminated = (nState.ghost == true)
         or (nState.out == true)
@@ -2314,6 +2666,31 @@ local function stepMainLoop()
         return
     end
 
+    -- Match victory detection (survived through results / victory screen)
+    if (nState.phase == "results" or nState.phase == "ended") and not isEliminated then
+        if State.LastReportedNightId ~= nState.nightId then
+            State.LastReportedNightId = nState.nightId
+            task.spawn(function()
+                task.wait(2.0)
+                local currentTotal = getMidnightGiftsCount()
+                local prev = State.PreMatchGiftsCount or currentTotal
+                local giftsWon = math.max(currentTotal - prev, 0)
+                if giftsWon == 0 then
+                    giftsWon = 1
+                end
+                local treatsBag = tonumber(nState.bag) or 0
+                log("Match victory: Won " .. tostring(giftsWon) .. " gifts (Total: " .. tostring(currentTotal) .. ", Treats: " .. tostring(treatsBag) .. ")")
+                State.PreMatchGiftsCount = currentTotal
+
+                if Config.AutoOpenMidnightGifts then
+                    task.wait(1.0)
+                    openMidnightGifts()
+                end
+                autoUsePostMatchBoost()
+            end)
+        end
+    end
+
     -- Optional CashOut (disabled by default to reach Final)
     if Config.AutoCashOut and nState.cashoutOpen == true and (tonumber(nState.bag) or 0) >= Config.CashOutMinTreats then
         log("Cashing out with bag: " .. tostring(nState.bag))
@@ -2321,15 +2698,42 @@ local function stepMainLoop()
         return
     end
 
-    -- Active round execution
-    if nState.phase == "play" then
+    -- Trick buffs activation: auto-use any trick the HUD marks as Ready! immediately
+    autoUseReadyTricks(nightMod)
+
+    if nState.phase == "play" or nState.phase == "intermission" then
+
         if Config.AutoUseLuckyCharm and State.LuckyCharmUsedNightId ~= nState.nightId then
-            State.LuckyCharmUsedNightId = nState.nightId
-            if m.HalloweenGames and hasTrickItem(m.HalloweenGames.TRICKS.LuckyCharm) then
+            if isTrickArmed("LuckyCharm") then
+                State.LuckyCharmUsedNightId = nState.nightId
+            elseif hasTrickItem("LuckyCharm") and isTrickReady("LuckyCharm") then
                 log("Activating Lucky Charm")
                 nightMod.Trick("LuckyCharm")
+                State.LuckyCharmUsedNightId = nState.nightId
             end
         end
+
+        if Config.AutoUseTreatMagnet and State.TreatMagnetUsedRoundId ~= (nState.roundId or State.Round.Id) then
+            if isTrickArmed("TreatMagnet") then
+                State.TreatMagnetUsedRoundId = nState.roundId or State.Round.Id
+            elseif hasTrickItem("TreatMagnet") and isTrickReady("TreatMagnet") then
+                log("Activating Treat Magnet")
+                nightMod.Trick("TreatMagnet")
+                State.TreatMagnetUsedRoundId = nState.roundId or State.Round.Id
+            end
+        end
+
+        if Config.AutoUseBroomstick and State.BroomstickUsedNightId ~= nState.nightId then
+            if hasTrickItem("Broomstick") and isTrickReady("Broomstick") then
+                log("Activating Broomstick")
+                nightMod.Trick("Broomstick")
+                State.BroomstickUsedNightId = nState.nightId
+            end
+        end
+    end
+
+    -- Active round execution
+    if nState.phase == "play" then
 
         local roundId = nState.roundId or State.Round.Id
         if roundId == "BroomSweep" then
@@ -2376,11 +2780,10 @@ env.__HG_AUTO_CLEANUP = function()
     log("Stopped previous instance")
 end
 
-if Config.AutoQueueOnTeleport and not env.__HG_QOT_REGISTERED then
+if Config.AutoQueueOnTeleport then
     local qot = queue_on_teleport or queueonteleport or (syn and syn.queue_on_teleport)
     if type(qot) == "function" and type(isfile) == "function" and type(readfile) == "function" then
         if isfile("__hg_auto_minigame.lua") then
-            env.__HG_QOT_REGISTERED = true
             pcall(
                 qot,
                 'repeat task.wait() until game:IsLoaded(); if isfile and isfile("__hg_auto_minigame.lua") then loadstring(readfile("__hg_auto_minigame.lua"))() end'
@@ -2389,5 +2792,11 @@ if Config.AutoQueueOnTeleport and not env.__HG_QOT_REGISTERED then
         end
     end
 end
+
+task.spawn(function()
+    task.wait(1.0)
+    syncKnownHugePets()
+    State.PreMatchGiftsCount = getMidnightGiftsCount()
+end)
 
 log("Auto Minigame initialized")
