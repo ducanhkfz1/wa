@@ -1,6 +1,6 @@
 local genv = (type(getgenv) == "function" and getgenv()) or _G
 if genv.XuantamHalloweenGames_Running then return end
-genv.XuantamHalloweenGames_Running = true
+genv.tungtungHalloweenGames_Running = true
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,7 +11,7 @@ local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
-local resumeSettings = type(genv.XuantamHalloweenGames_Resume) == "table" and genv.XuantamHalloweenGames_Resume or nil
+local resumeSettings = type(genv.tungtungHalloweenGames_Resume) == "table" and genv.tungtungHalloweenGames_Resume or nil
 local state = { alive = true, gamesNote = "Waiting...", movingTo = nil }
 local V = { g = { round = nil, spoof = false, spoofInstalled = false, enabledFor = nil } }
 local R = {}
@@ -23,25 +23,25 @@ if resumeSettings then
         if type(resumeSettings[key]) == "boolean" then Flags[key] = resumeSettings[key] end
     end
 end
-genv.XuantamHalloweenGames_Resume = nil
+genvtungtungHalloweenGames_Resume = nil
 
 -- ==========================================
--- 1. XUANTAM FIX LAG UI & PERFORMANCE CORE + NÚT BẬT TẮT ĐỘC LẬP
+-- 1. tungtung FIX LAG UI & PERFORMANCE CORE + NÚT BẬT TẮT ĐỘC LẬP
 -- ==========================================
 pcall(function()
-    if CoreGui:FindFirstChild("XuantamFixLagUI") then 
+    if CoreGui:FindFirstChild("tungtungFixLagUI") then 
         CoreGui.XuantamFixLagUI:Destroy() 
     end
-    if CoreGui:FindFirstChild("XuantamToggleUI") then 
+    if CoreGui:FindFirstChild("tungtungToggleUI") then 
         CoreGui.XuantamToggleUI:Destroy() 
     end
-    if CoreGui:FindFirstChild("XuantamWhiteScreen") then 
-        CoreGui.XuantamWhiteScreen:Destroy() 
+    if CoreGui:FindFirstChild("tungtungWhiteScreen") then 
+        CoreGui.tungtungWhiteScreen:Destroy() 
     end
 end)
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "XuantamFixLagUI"
+ScreenGui.Name = "tungtungFixLagUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
@@ -79,7 +79,7 @@ local function createLabel(pos, text, size, isBold)
     return lbl
 end
 
-createLabel(UDim2.new(0, 10, 0, 8), "⚡ XUANTAM | KAITUN NGẦM 🚀", 20, true)
+createLabel(UDim2.new(0, 10, 0, 8), "⚡ tungtung | 29hanoi 🚀", 20, true)
 createLabel(UDim2.new(0, 10, 0, 32), "👤 Tên: " .. LocalPlayer.DisplayName, 18, false)
 local FpsLabel = createLabel(UDim2.new(0, 10, 0, 52), "⚡ FPS: Đang tính...", 18, false)
 local TimeLabel = createLabel(UDim2.new(0, 10, 0, 72), "⏰ Giờ: 00:00:00", 18, false)
@@ -138,10 +138,10 @@ ToggleButton.MouseButton1Click:Connect(function()
     Flags.WhiteScreen = not Flags.WhiteScreen
     WhiteScreenGui.Enabled = Flags.WhiteScreen
     if Flags.WhiteScreen then
-        ToggleButton.Text = "🛡️ Màn Trắng: [ĐANG BẬT]"
+        ToggleButton.Text = "🛡️ hanoi: [ĐANG BẬT]"
         ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 100)
     else
-        ToggleButton.Text = "🛡️ Màn Trắng: [ĐÃ TẮT]"
+        ToggleButton.Text = "🛡️ hanoi: [ĐÃ TẮT]"
         ToggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
     end
 end)
@@ -2421,4 +2421,4 @@ task.spawn(function()
     end
 end)
 
-print("⚡ XUANTAM HUB: 3S DELAY ELIMINATED EXIT & 19S FIX-LAG LOOP LOADED!")
+print("⚡tungtung HUB: 3S DELAY ELIMINATED EXIT & 19S FIX-LAG LOOP LOADED!")
