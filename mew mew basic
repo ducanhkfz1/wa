@@ -1,3 +1,7 @@
+-- 1. Cấu hình khởi chạy
+-- Ghi thời điểm khởi động trước khi tải các module.
+local scriptStartedAt = os.clock()
+
 -- Launcher có thể truyền cấu hình riêng cho lần chạy này.
 local environment = type(getgenv) == "function" and getgenv() or _G
 local launchConfig = environment.RobloxHubConfig
@@ -6,297 +10,452 @@ if type(launchConfig) ~= "table" then launchConfig = nil end
 local launchToggles = launchConfig and type(launchConfig.toggles) == "table" and launchConfig.toggles or {}
 local startupActions = {}
 
+-- Danh sách Add Enchant không phải control có flag, nên lưu riêng theo tài khoản.
+local enchantConfigPath = "RobloxHubEnchantList_" .. game:GetService("Players").LocalPlayer.UserId .. ".json"
+local httpService = game:GetService("HttpService")
+
+-- Đọc danh sách enchant đã lưu của tài khoản.
+local function loadEnchantList()
+    if launchConfig then
+        return type(launchConfig.enchants) == "table" and launchConfig.enchants or {}
+    end
+    if type(readfile) ~= "function" then return {} end
+    if type(isfile) == "function" and not isfile(enchantConfigPath) then return {} end
+    local ok, list = pcall(function()
+        return httpService:JSONDecode(readfile(enchantConfigPath))
+    end)
+    return ok and type(list) == "table" and list or {}
+end
+
+-- Lưu thứ tự Add Enchant vào JSON cục bộ.
+local function saveEnchantList(list)
+    if launchConfig then return end
+    local ok = pcall(function()
+        writefile(enchantConfigPath, httpService:JSONEncode(list))
+    end)
+    if not ok then warn("[Enchant UI] Không lưu được danh sách enchant vào config") end
+end
+
+-- 2. Tải các module tính năng
 -- Thêm một URL Raw vào danh sách cho mỗi file xử lý mới.
 local urls = {
     "https://raw.githubusercontent.com/duyvip453/dyu/refs/heads/main/farm.lua",
     "https://raw.githubusercontent.com/duyvip453/dyu/refs/heads/main/rank.lua",
-    "https://raw.githubusercontent.com/duyvip453/dyu/refs/heads/main/automatic.lua",
+    "https://raw.githubusercontent.com/duyvip453/dyu/main/automatic.lua",
     "https://raw.githubusercontent.com/duyvip453/dyu/refs/heads/main/optimize.lua",
     "https://raw.githubusercontent.com/duyvip453/dyu/refs/heads/main/mail.lua",
+    "https://raw.githubusercontent.com/duyvip453/dyu/main/webhook.lua",
 }
 
+-- Gộp tính năng từ các module theo tên flag.
 local features = {}
 for _, url in ipairs(urls) do
-    local loadTab = assert(loadstring(game:HttpGet(url)))
-    for flag, feature in pairs(loadTab()) do
+    local filename = url:match("[^/]+$")
+    local source = game:HttpGet(url)
+    -- Một số client còn nhận bản webhook giữ chỗ rỗng từ cache.
+    if filename == "webhook.lua" and not source:find("%S") then continue end
+    local loadTab = assert(loadstring(source, "@" .. filename))
+    local moduleFeatures
+    if filename == "rank.lua" then
+        moduleFeatures = loadTab(scriptStartedAt)
+    else
+        moduleFeatures = loadTab()
+    end
+    assert(type(moduleFeatures) == "table", filename .. " phải trả về bảng features")
+    for flag, feature in pairs(moduleFeatures) do
         features[flag] = feature
     end
 end
 
-local Rayfield = nil
-local success, RayfieldModule = pcall(function()
-    return loadstring(game:HttpGet("https://sirius.menu/gen2"))()
-end)
-if success and type(RayfieldModule) == "table" then
-    Rayfield = RayfieldModule
-end
+-- 3. Tạo cửa sổ và các tab
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/gen2"))()
 
-local function createFallbackGui()
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "MewMewHub"
-    screenGui.ResetOnSpawn = false
-    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    screenGui.IgnoreGuiInset = true
-    screenGui.Parent = game:GetService("CoreGui")
+local window = Rayfield:CreateWindow({
+    name = "mew hub",
+    sidebarLayout = true,
+    configuration = {
+        autoSave = launchConfig == nil,
+        autoLoad = launchConfig == nil,
+        fileName = "RobloxHubUI",
+    },
+})
 
-    local main = Instance.new("Frame")
-    main.Name = "Main"
-    main.Size = UDim2.new(0, 430, 0, 520)
-    main.Position = UDim2.new(0.5, -215, 0.5, -260)
-    main.BackgroundColor3 = Color3.fromRGB(20, 14, 30)
-    main.BorderSizePixel = 0
-    main.Parent = screenGui
+-- Khai báo các tab theo thứ tự xuất hiện trên menu.
+window:CreateTab({ name = "Stats" })
+local farm = window:CreateTab({ name = "farm" })
+local optimize = window:CreateTab({ name = "optimize" })
+window:CreateTab({ name = "Event" })
+local mail = window:CreateTab({ name = "mail" })
+local trading = window:CreateTab({ name = "trading" })
+local rank = window:CreateTab({ name = "rank" })
+local automatic = window:CreateTab({ name = "automatic" })
+local webhook = window:CreateTab({ name = "webhook" })
+window:CreateTab({ name = "setting" })
 
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 18)
-    corner.Parent = main
-
-    local top = Instance.new("Frame")
-    top.Size = UDim2.new(1, 0, 0, 60)
-    top.BackgroundColor3 = Color3.fromRGB(40, 28, 56)
-    top.BorderSizePixel = 0
-    top.Parent = main
-
-    local topCorner = Instance.new("UICorner")
-    topCorner.CornerRadius = UDim.new(0, 18)
-    topCorner.Parent = top
-
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -80, 0, 32)
-    title.Position = UDim2.new(0, 20, 0, 15)
-    title.BackgroundTransparency = 1
-    title.Text = "Mew Mew Hub"
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 18
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = top
-
-    local status = Instance.new("TextLabel")
-    status.Size = UDim2.new(1, -20, 0, 20)
-    status.Position = UDim2.new(0, 20, 0, 38)
-    status.BackgroundTransparency = 1
-    status.Text = "Status: ONLINE"
-    status.Font = Enum.Font.Gotham
-    status.TextSize = 11
-    status.TextColor3 = Color3.fromRGB(177, 255, 185)
-    status.TextXAlignment = Enum.TextXAlignment.Left
-    status.Parent = top
-
-    local body = Instance.new("ScrollingFrame")
-    body.Size = UDim2.new(1, -20, 1, -80)
-    body.Position = UDim2.new(0, 10, 0, 70)
-    body.BackgroundTransparency = 1
-    body.BorderSizePixel = 0
-    body.CanvasSize = UDim2.new(0, 0, 0, 600)
-    body.ScrollBarThickness = 6
-    body.Parent = main
-
-    local function addButton(text, y)
-        local button = Instance.new("TextButton")
-        button.Size = UDim2.new(1, -20, 0, 40)
-        button.Position = UDim2.new(0, 10, 0, y)
-        button.BackgroundColor3 = Color3.fromRGB(90, 70, 120)
-        button.Text = text
-        button.Font = Enum.Font.GothamSemibold
-        button.TextSize = 14
-        button.TextColor3 = Color3.fromRGB(255, 255, 255)
-        button.BorderSizePixel = 0
-        button.Parent = body
-
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 12)
-        corner.Parent = button
-
-        return button
+-- 4. Hàm tạo toggle và tiện ích nền
+-- Nối toggle Rayfield với tính năng cùng flag.
+local function createToggle(tab, name, flag)
+    local initial = launchToggles[flag] == true
+    local applied = false
+    -- Áp dụng trạng thái bật tắt từ giao diện hoặc launcher.
+    local function apply(enabled)
+        local feature = features[flag]
+        if feature and (not launchConfig or applied ~= enabled) then
+            applied = enabled
+            feature.duy(enabled, features)
+        end
     end
 
-    local y = 0
-    for _, label in ipairs({
-        "Farm", "Optimize", "Mail", "Rank", "Auto", "Settings"
-    }) do
-        local btn = addButton(label, y)
-        y += 48
-        btn.MouseButton1Click:Connect(function()
-            if btn.Text == "Farm" then
-                btn.Text = "Farm - ON"
-            elseif btn.Text == "Farm - ON" then
-                btn.Text = "Farm"
-            end
-        end)
-    end
-
-    local drag = Instance.new("TextButton")
-    drag.Size = UDim2.new(1, 0, 0, 60)
-    drag.Position = UDim2.new(0, 0, 0, 0)
-    drag.BackgroundTransparency = 1
-    drag.Text = ""
-    drag.Parent = top
-
-    local dragging = false
-    local dragStart
-    local startPos
-    drag.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = main.Position
-        end
-    end)
-    drag.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local delta = input.Position - dragStart
-            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-    drag.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-
-    return screenGui
-end
-
-local window = nil
-if Rayfield then
-    window = Rayfield:CreateWindow({
-        name = "Mew Mew Hub",
-        sidebarLayout = true,
-        configuration = {
-            autoSave = launchConfig == nil,
-            autoLoad = launchConfig == nil,
-            fileName = "MewMewHubUI",
-        },
+    tab:CreateToggle({
+        name = name,
+        flag = flag,
+        value = initial,
+        callback = apply,
     })
-else
-    createFallbackGui()
+    if initial then table.insert(startupActions, function() apply(true) end) end
 end
 
-if window then
-    local main = window:CreateTab({ name = "Mew Home" })
-    local farm = window:CreateTab({ name = "Mew Farm" })
-    local optimize = window:CreateTab({ name = "Mew Optimize" })
-    local eventTab = window:CreateTab({ name = "Mew Event" })
-    local mail = window:CreateTab({ name = "Mew Mail" })
-    local trading = window:CreateTab({ name = "Mew Trade" })
-    local rank = window:CreateTab({ name = "Mew Rank" })
-    local automatic = window:CreateTab({ name = "Mew Auto" })
-    local settings = window:CreateTab({ name = "Mew Settings" })
+-- Đọc kho ở luồng riêng để giữ quyền tạo UI của Rayfield.
+local function runInventoryAction(action, ...)
+    local result
+    task.spawn(function(...)
+        result = table.pack(pcall(action, ...))
+    end, ...)
+    while not result do task.wait() end
+    return table.unpack(result, 1, result.n)
+end
 
-    local function createToggle(tab, name, flag)
-        local initial = launchToggles[flag] == true
-        local applied = false
-        local function apply(enabled)
-            local feature = features[flag]
-            if feature and (not launchConfig or applied ~= enabled) then
-                applied = enabled
-                feature.duy(enabled, features)
-            end
-        end
+-- Cho nhân vật nhảy bằng Humanoid trên PC và mobile.
+local function jumpForAntiAfk(player)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if humanoid then humanoid.Jump = true end
+end
 
-        tab:CreateToggle({
-            name = name,
-            flag = flag,
-            value = initial,
-            callback = apply,
-        })
-
-        if initial then
-            table.insert(startupActions, function()
-                apply(true)
-            end)
-        end
+-- Khởi động một vòng nhảy mỗi phút cho phiên hiện tại.
+local function startAntiAfk()
+    -- Ngừng vòng nhảy cũ khi chạy lại script.
+    if environment.RobloxHubAntiAfkJob then
+        pcall(task.cancel, environment.RobloxHubAntiAfkJob)
+    end
+    -- Gỡ listener idle từ bản dùng chuột ảo.
+    if environment.RobloxHubAntiAfkConnection then
+        environment.RobloxHubAntiAfkConnection:Disconnect()
+        environment.RobloxHubAntiAfkConnection = nil
     end
 
-    main:CreateSection({ name = "Quick Start" })
-    createToggle(main, "🐾 inf pet speed", "FarmInfinityPetSpeed")
-    createToggle(main, "⚡ fast farm", "FarmFastFarm")
-    createToggle(main, "✨ auto tap", "FarmAutoTap")
-    createToggle(main, "💎 auto claim orb", "FarmAutoCollectOrb")
-    createToggle(main, "📍 tele to best area", "FarmTeleToBestArea")
-    createToggle(main, "🌍 tele to best world", "FarmTeleToBestWorld")
+    local player = game:GetService("Players").LocalPlayer
+    environment.RobloxHubAntiAfkJob = task.defer(function()
+        while true do
+            task.wait(60)
+            jumpForAntiAfk(player)
+        end
+    end)
+end
 
-    farm:CreateSection({ name = "Farming" })
-    createToggle(farm, "🐾 inf pet speed", "FarmInfinityPetSpeed")
-    createToggle(farm, "⚡ fast farm", "FarmFastFarm")
-    createToggle(farm, "✨ auto tap", "FarmAutoTap")
-    createToggle(farm, "💎 auto claim orb, lootbox", "FarmAutoCollectOrb")
-    createToggle(farm, "📍 tele to best area", "FarmTeleToBestArea")
-    createToggle(farm, "🌍 tele to best world", "FarmTeleToBestWorld")
-    createToggle(farm, "🛒 auto buy next area", "FarmAutoBuyNextArea")
+-- 5. Các tab cấu hình và tiện ích
 
-    farm:CreateSection({ name = "Update Slot" })
-    createToggle(farm, "🦴 auto upd pet slot", "FarmAutoPetSlot")
-    createToggle(farm, "🥚 auto upd egg slot", "FarmAutoEggSlot")
 
+-- Tạo các toggle tối ưu hiển thị.
+local function buildOptimizeTab()
     optimize:CreateSection({ name = "Loot boxes" })
-    createToggle(optimize, "📦 disable loot boxes", "OptimizeDisableLootBoxes")
+    createToggle(optimize, "disable loot boxes", "OptimizeDisableLootBoxes")
     optimize:CreateSection({ name = "Dropped objects" })
-    createToggle(optimize, "🧹 disable objects", "OptimizeDisableObjects")
+    createToggle(optimize, "disable objects", "OptimizeDisableObjects")
     optimize:CreateSection({ name = "Combined" })
-    createToggle(optimize, "✨ super optimize", "OptimizeSuper")
+    createToggle(optimize, "super optimize", "OptimizeSuper")
 
-    eventTab:CreateSection({ name = "Event" })
-    createToggle(eventTab, "🎉 auto event reward", "EventAutoReward")
-    createToggle(eventTab, "🎁 auto collect event reward", "EventAutoCollect")
+    -- Cấu hình giới hạn FPS của client.
+    local fpsLimit = features.OptimizeFpsLimit
+    local initialFps = "30"
+    if fpsLimit and launchConfig and launchConfig.fpsTarget ~= nil then
+        if fpsLimit.setTarget(launchConfig.fpsTarget) then
+            initialFps = tostring(tonumber(launchConfig.fpsTarget))
+        end
+    end
+    optimize:CreateSection({ name = "FPS" })
+    optimize:CreateInput({
+        name = "Target FPS",
+        flag = "OptimizeFpsTarget",
+        numeric = true,
+        value = initialFps,
+        placeholder = "Nhập FPS mong muốn",
+        callback = function(value)
+            if fpsLimit then fpsLimit.setTarget(value) end
+        end,
+    })
+    createToggle(optimize, "Limit FPS", "OptimizeFpsLimit")
+end
 
-    mail:CreateSection({ name = "Mail" })
-    createToggle(mail, "📬 auto claim mail", "MailAutoClaim")
+-- Tạo giao diện nhận thư và cấu hình gửi quà.
+local function buildMailTab()
+    createToggle(mail, "Tự nhận thư", "MailAutoClaim")
+    local gift = features.MailAutoGift
+    if not gift then return end
     mail:CreateInput({
         name = "User Name",
         flag = "MailUserName",
         value = "",
         placeholder = "...",
+        callback = gift.setRecipient,
     })
 
+    local selectedClass, itemDropdown
+    -- Đổi danh sách Item ID theo Class đang chọn.
+    local function selectClass(class)
+        local changed = selectedClass ~= nil and selectedClass ~= class
+        selectedClass = class
+        if itemDropdown then
+            if changed then itemDropdown:Set("", true) end
+            itemDropdown:Refresh(gift.getNames(class))
+        end
+    end
     mail:CreateDropdown({
         name = "Item Class",
-        flag = "ItemClass",
-        options = { "A", "B" },
-        multiSelect = true,
-        value = {},
+        flag = "MailGiftClass",
+        options = gift.getClasses(),
+        multiSelect = false,
+        callback = selectClass,
     })
-    mail:CreateDropdown({
-        name = "Item Name",
-        flag = "ItemName",
-        options = { "A", "B" },
-        multiSelect = true,
-        value = {},
+    itemDropdown = mail:CreateDropdown({
+        name = "Item ID",
+        flag = "MailGiftItem",
+        options = {},
+        multiSelect = false,
     })
-    createToggle(mail, "🎁 auto gift", "MailAutoGift")
+    if selectedClass then selectClass(selectedClass) end
 
-    trading:CreateSection({ name = "Booth Sniping" })
+    local amount = mail:CreateInput({
+        name = "Amount",
+        flag = "MailGiftAmount",
+        value = "",
+        placeholder = "Ví dụ: 100k",
+    })
+    local keep = mail:CreateInput({
+        name = "Keep",
+        flag = "MailGiftKeep",
+        value = "",
+        placeholder = "Ví dụ: 10k hoặc 0",
+    })
+    local giftText = mail:CreateText({ text = "Danh sách gift: (trống)" })
+    -- Hiện mỗi quy tắc gửi quà trên một dòng.
+    local function updateGiftText()
+        local lines = {}
+        for _, rule in ipairs(gift.getList()) do
+            lines[#lines + 1] = ("%s, %s, %s, %s"):format(rule.class, rule.name, rule.amount, rule.keep)
+        end
+        giftText:Set(#lines > 0 and table.concat(lines, "\n") or "Danh sách gift: (trống)")
+    end
+    mail:CreateButton({
+        name = "Add Item",
+        callback = function()
+            local added, reason = gift.add(selectedClass, itemDropdown.value[1], amount.value, keep.value)
+            if added then updateGiftText() else warn("[Auto Gift] " .. reason) end
+        end,
+    })
+    mail:CreateButton({
+        name = "Clear 1 Item",
+        callback = function()
+            gift.removeLast()
+            updateGiftText()
+        end,
+    })
+    createToggle(mail, "auto gift", "MailAutoGift")
+end
+
+-- Tạo giao diện cấu hình webhook.
+local function buildWebhookTab()
+    -- Webhook chung: URL, loại thông báo và nút điều khiển.
+    local petWebhook = features.WebhookEnabled
+    webhook:CreateSection({ name = "webhook" })
+    webhook:CreateInput({
+        name = "Webhook URL",
+        flag = "WebhookUrl",
+        value = "",
+        placeholder = "Dán link webhook",
+        callback = function(value)
+            if petWebhook then petWebhook.setUrl(value) end
+        end,
+    })
+    webhook:CreateDropdown({
+        name = "Webhook Events",
+        flag = "WebhookEvents",
+        options = petWebhook and petWebhook.getOptions() or {},
+        multiSelect = true,
+        value = {},
+        placeholder = "Chọn loại pet muốn báo",
+        callback = function(values)
+            if petWebhook then petWebhook.setSelection(values) end
+        end,
+    })
+    createToggle(webhook, "Start Webhook", "WebhookEnabled")
+    webhook:CreateButton({
+        name = "Test Webhook",
+        callback = function()
+            if petWebhook then petWebhook.test() end
+        end,
+    })
+
+    -- Webhook Rank dùng URL và cấu hình riêng.
+    local rankWebhook = features.RankWebhookEnabled
+    local rankPreset = launchConfig and type(launchConfig.rankWebhook) == "table" and launchConfig.rankWebhook or {}
+    local initialRankUrl = type(rankPreset.url) == "string" and rankPreset.url or ""
+    local initialRankTarget = rankPreset.target ~= nil and tostring(rankPreset.target) or ""
+    webhook:CreateSection({ name = "webhook rank" })
+    webhook:CreateInput({
+        name = "Rank Webhook URL",
+        flag = "RankWebhookUrl",
+        value = initialRankUrl,
+        placeholder = "Dán link webhook rank",
+        callback = function(value)
+            if rankWebhook then rankWebhook.setUrl(value) end
+        end,
+    })
+    webhook:CreateInput({
+        name = "Target Rank",
+        flag = "RankWebhookTarget",
+        numeric = true,
+        value = initialRankTarget,
+        placeholder = "Nhập rank để kích hoạt",
+        callback = function(value)
+            if rankWebhook then rankWebhook.setTarget(value) end
+        end,
+    })
+    if rankWebhook and launchConfig then
+        rankWebhook.setUrl(initialRankUrl)
+        rankWebhook.setTarget(initialRankTarget)
+    end
+    createToggle(webhook, "Start Rank Webhook", "RankWebhookEnabled")
+    webhook:CreateButton({
+        name = "Test Rank Webhook",
+        callback = function()
+            if rankWebhook then rankWebhook.test() end
+        end,
+    })
+end
+
+-- Tạo các nhóm giao diện giao dịch.
+local function buildTradingTab()
     local boothSnipe = trading:CreateGroup({ direction = "column" })
     boothSnipe:CreateSection({ name = "Săn món ở gian hàng" })
 
     local boothSeller = trading:CreateGroup({ direction = "column" })
     boothSeller:CreateSection({ name = "Bán ở gian hàng" })
+end
 
-    rank:CreateSection({ name = "Rank" })
-    createToggle(rank, "🏆 auto claim rank reward", "RankAutoClaimReward")
-    rank:CreateSection({ name = "Auto quest" })
-    createToggle(rank, "📜 auto rank quest", "RankAutoQuest")
-    createToggle(rank, "📊 stats gui", "RankStatsGui")
+-- 6. Các tab tính năng thường xuyên mở rộng
 
-    automatic:CreateSection({ name = "Auto" })
-    createToggle(automatic, "🎁 auto claim free gift", "AutoClaimFreeGift")
 
-    local giftOptions = { "Gift Bag", "Large Gift Bag", "Mini Chest" }
+-- Tạo giao diện cho các tính năng farm.
+local function buildFarmTab()
+    -- Farm và di chuyển
+    createToggle(farm, "inf pet speed", "FarmInfinityPetSpeed")
+    createToggle(farm, "fast farm", "FarmFastFarm")
+    createToggle(farm, "auto tap", "FarmAutoTap")
+    createToggle(farm, "Tự nhặt orb", "FarmAutoCollectOrb")
+    createToggle(farm, "tele to best area", "FarmTeleToBestArea")
+    createToggle(farm, "tele to best world", "FarmTeleToBestWorld")
+    createToggle(farm, "auto buy next area", "FarmAutoBuyNextArea")
+
+    farm:CreateSection({ name = "Nâng cấp slot" })
+    createToggle(farm, "auto upd pet slot", "FarmAutoPetSlot")
+    createToggle(farm, "auto upd egg slot", "FarmAutoEggSlot")
+end
+
+-- Tạo giao diện cho các tính năng rank.
+local function buildRankTab()
+    createToggle(rank, "auto claim rank reward", "RankAutoClaimReward")
+    rank:CreateSection({ name = "auto quest" })
+    createToggle(rank, "auto rank quest", "RankAutoQuest")
+    createToggle(rank, "stats gui", "RankStatsGui")
+end
+
+-- Tạo giao diện cho các tính năng tự động.
+local function buildAutomaticTab()
+    -- Nhận quà online
+    createToggle(automatic, "auto claim free gift", "AutoClaimFreeGift")
+
+    -- Trang bị enchant
+    automatic:CreateSection({ name = "Enchant" })
+    local enchantFeature = features.AutoEquipEnchant
+    local selectedEnchant
+
+    local hasEnchantNames, enchantNames = runInventoryAction(enchantFeature.getNames)
+    if not hasEnchantNames then
+        warn("[Enchant UI] " .. tostring(enchantNames))
+        enchantNames = {}
+    end
+    local enchantDropdown = automatic:CreateDropdown({
+        name = "Enchant",
+        flag = "AutoEnchantSelection",
+        multiSelect = false,
+        options = enchantNames,
+        callback = function(value) selectedEnchant = value end,
+    })
+    local enchantText = automatic:CreateText({ text = "enchant : (trống)" })
+    -- Hiện sách theo đúng thứ tự trong danh sách Add Enchant.
+    local function updateEnchantText()
+        local list = enchantFeature.getList()
+        enchantText:Set("enchant : " .. (#list > 0 and table.concat(list, ", ") or "(trống)"))
+    end
+
+    -- Khôi phục danh sách trước khi Rayfield có thể bật lại Auto Equip từ config.
+    local savedEnchants = loadEnchantList()
+    if #savedEnchants > 0 then
+        local ok, err = runInventoryAction(function()
+            for _, name in ipairs(savedEnchants) do
+                if type(name) == "string" then enchantFeature.add(name) end
+            end
+        end)
+        if not ok then warn("[Enchant UI] " .. tostring(err)) end
+        updateEnchantText()
+    end
+    automatic:CreateButton({
+        name = "add enchant",
+        callback = function()
+            local name = selectedEnchant or enchantDropdown.value[1]
+            if name then
+                local ok, err = runInventoryAction(enchantFeature.add, name)
+                if not ok then warn("[Enchant UI] " .. tostring(err)) end
+                if ok and err then saveEnchantList(enchantFeature.getList()) end
+            end
+            updateEnchantText()
+        end,
+    })
+    automatic:CreateButton({
+        name = "clear enchant",
+        callback = function()
+            enchantFeature.clear()
+            saveEnchantList(enchantFeature.getList())
+            updateEnchantText()
+        end,
+    })
+    createToggle(automatic, "auto equip enchant", "AutoEquipEnchant")
+
+    -- Dọn vòng làm mới inventory còn chạy từ bản UI cũ.
+    if environment.RobloxHubEnchantUiJob then
+        pcall(task.cancel, environment.RobloxHubEnchantUiJob)
+        environment.RobloxHubEnchantUiJob = nil
+    end
+
+    -- Chọn loại và tự mở quà
+    local giftFeature = features.AutoOpenGifts
+    local giftOptions = giftFeature and giftFeature.getOptions and giftFeature.getOptions()
+        or { "Gift Bag", "Large Gift Bag", "Mini Chest" }
     local initialGifts = {}
-    if launchConfig and type(launchConfig.gifts) == "table" then
+    if launchConfig then
+        local giftPreset = launchConfig.gifts
         for _, id in ipairs(giftOptions) do
-            if table.find(launchConfig.gifts, id) then
+            if type(id) == "string" and id:find("%S")
+                and (giftPreset == "all" or (type(giftPreset) == "table" and table.find(giftPreset, id))) then
                 table.insert(initialGifts, id)
             end
         end
     end
-
+    -- Chuyển các loại quà đã chọn sang module Automatic.
     local function setGiftSelection(values)
         local feature = features.AutoOpenGifts
-        if feature then
-            feature.setSelection(values)
-        end
+        if feature then feature.setSelection(values) end
     end
 
     automatic:CreateDropdown({
@@ -307,63 +466,20 @@ if window then
         value = initialGifts,
         callback = setGiftSelection,
     })
-    if launchConfig then
-        setGiftSelection(initialGifts)
-    end
-    createToggle(automatic, "🎀 auto open gifts", "AutoOpenGifts")
-
-    settings:CreateSection({ name = "Preferences" })
-    settings:CreateInput({
-        name = "Hub Name",
-        flag = "HubName",
-        value = "Mew Mew Hub",
-        placeholder = "Mew Mew Hub",
-    })
-    settings:CreateToggle({
-        name = "✨ Enable Anti-AFK",
-        flag = "AntiAFK",
-        value = true,
-        callback = function(enabled)
-            if enabled then
-                if environment.RobloxHubAntiAfkJob then
-                    pcall(task.cancel, environment.RobloxHubAntiAfkJob)
-                end
-                environment.RobloxHubAntiAfkJob = task.spawn(function()
-                    local player = game:GetService("Players").LocalPlayer
-                    while true do
-                        task.wait(12 * 60)
-                        local character = player.Character
-                        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                        if humanoid and humanoid.Health > 0 then
-                            humanoid.Jump = true
-                        end
-                    end
-                end)
-            else
-                if environment.RobloxHubAntiAfkJob then
-                    pcall(task.cancel, environment.RobloxHubAntiAfkJob)
-                    environment.RobloxHubAntiAfkJob = nil
-                end
-            end
-        end,
-    })
+    if launchConfig then setGiftSelection(initialGifts) end
+    createToggle(automatic, "auto open gifts", "AutoOpenGifts")
 end
 
-for _, start in ipairs(startupActions) do
-    start()
-end
+-- 7. Khởi động UI và áp dụng cấu hình
+-- Giữ thứ tự tạo control và chạy các toggle từ launcher như bản cũ.
+buildFarmTab()
+buildOptimizeTab()
+buildMailTab()
+buildTradingTab()
+buildRankTab()
+buildWebhookTab()
+buildAutomaticTab()
 
-if environment.RobloxHubAntiAfkJob then
-    pcall(task.cancel, environment.RobloxHubAntiAfkJob)
-end
-environment.RobloxHubAntiAfkJob = task.spawn(function()
-    local player = game:GetService("Players").LocalPlayer
-    while true do
-        task.wait(12 * 60)
-        local character = player.Character
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        if humanoid and humanoid.Health > 0 then
-            humanoid.Jump = true
-        end
-    end
-end)
+-- Áp dụng các toggle được launcher đặt sẵn.
+for _, start in ipairs(startupActions) do start() end
+startAntiAfk()
