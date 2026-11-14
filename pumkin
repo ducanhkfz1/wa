@@ -1,309 +1,50 @@
-local player = game.Players.LocalPlayer
-local guiFolder = player:WaitForChild("PlayerGui")
-
--- Tránh tạo nhiều UI
-if guiFolder:FindFirstChild("MewHub") then
-    guiFolder.MewHub:Destroy()
-end
-
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MewHub"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = guiFolder
-
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 700, 0, 420)
-main.Position = UDim2.new(0.5, -350, 0.5, -210)
-main.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-main.BorderSizePixel = 0
-main.Parent = ScreenGui
-
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 16)
-corner.Parent = main
-
-local shadow = Instance.new("ImageLabel")
-shadow.Size = main.Size + UDim2.new(0, 18, 0, 18)
-shadow.Position = UDim2.new(0.5, -shadow.Size.X.Offset/2, 0.5, -shadow.Size.Y.Offset/2)
-shadow.BackgroundTransparency = 1
-shadow.Image = "rbxassetid://131604521"
-shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-shadow.ImageTransparency = 0.5
-shadow.ScaleType = Enum.ScaleType.Slice
-shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-shadow.Parent = main
-
--- TOP BAR
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 38)
-titleBar.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
-titleBar.BorderSizePixel = 0
-titleBar.Parent = main
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 16)
-titleCorner.Parent = titleBar
-
-local titleText = Instance.new("TextLabel")
-titleText.Size = UDim2.new(0, 220, 1, 0)
-titleText.Position = UDim2.new(0, 14, 0, 0)
-titleText.BackgroundTransparency = 1
-titleText.Font = Enum.Font.GothamBold
-titleText.Text = "Mew Hub"
-titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleText.TextSize = 20
-titleText.TextXAlignment = Enum.TextXAlignment.Left
-titleText.Parent = titleBar
-
-local statusText = Instance.new("TextLabel")
-statusText.Size = UDim2.new(0, 160, 1, 0)
-statusText.Position = UDim2.new(1, -175, 0, 0)
-statusText.BackgroundTransparency = 1
-statusText.Font = Enum.Font.GothamSemibold
-statusText.Text = "ONLINE"
-statusText.TextColor3 = Color3.fromRGB(90, 255, 150)
-statusText.TextSize = 12
-statusText.TextXAlignment = Enum.TextXAlignment.Right
-statusText.Parent = titleBar
-
--- LEFT PANEL
-local leftBar = Instance.new("Frame")
-leftBar.Size = UDim2.new(0, 180, 1, -38)
-leftBar.Position = UDim2.new(0, 0, 0, 38)
-leftBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
-leftBar.BorderSizePixel = 0
-leftBar.Parent = main
-
-local leftCorner = Instance.new("UICorner")
-leftCorner.CornerRadius = UDim.new(0, 16)
-leftCorner.Parent = leftBar
-
-local tabs = {}
-
-local function createTab(name, y)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -18, 0, 36)
-    btn.Position = UDim2.new(0, 9, 0, y)
-    btn.BackgroundColor3 = Color3.fromRGB(34, 34, 42)
-    btn.BorderSizePixel = 0
-    btn.Text = name
-    btn.Font = Enum.Font.GothamSemibold
-    btn.TextColor3 = Color3.fromRGB(220, 220, 225)
-    btn.TextSize = 14
-    btn.AutoButtonColor = false
-    btn.Parent = leftBar
-
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 10)
-    btnCorner.Parent = btn
-
-    local glow = Instance.new("Frame")
-    glow.Size = UDim2.new(0, 4, 1, 0)
-    glow.Position = UDim2.new(0, 0, 0, 0)
-    glow.BackgroundColor3 = Color3.fromRGB(102, 200, 255)
-    glow.BorderSizePixel = 0
-    glow.Visible = false
-    glow.Parent = btn
-
-    local btnStroke = Instance.new("UIStroke")
-    btnStroke.Color = Color3.fromRGB(255, 255, 255)
-    btnStroke.Transparency = 0.85
-    btnStroke.Thickness = 1
-    btnStroke.Parent = btn
-
-    table.insert(tabs, {button = btn, glow = glow})
-    return btn
-end
-
-local mainTab = createTab("Main", 12)
-local miscTab = createTab("Misc", 56)
-
--- RIGHT CONTENT
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -180, 1, -38)
-content.Position = UDim2.new(0, 180, 0, 38)
-content.BackgroundColor3 = Color3.fromRGB(19, 19, 23)
-content.BorderSizePixel = 0
-content.Parent = main
-
-local contentCorner = Instance.new("UICorner")
-contentCorner.CornerRadius = UDim.new(0, 16)
-contentCorner.Parent = content
-
-local featureList = Instance.new("ScrollingFrame")
-featureList.Size = UDim2.new(1, -20, 1, -20)
-featureList.Position = UDim2.new(0, 10, 0, 10)
-featureList.BackgroundTransparency = 1
-featureList.BorderSizePixel = 0
-featureList.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-featureList.ScrollBarThickness = 5
-featureList.CanvasSize = UDim2.new(0, 0, 0, 0)
-featureList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-featureList.Parent = content
-
--- UI Helpers
-local function addRounded(obj, radius)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius)
-    corner.Parent = obj
-end
-
-local togMap = {}
-local featureNames = {}
-
--- Feature structure
-local function addFeature(labelText, defaultValue, callback)
-    local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, 0, 0, 48)
-    row.BackgroundColor3 = Color3.fromRGB(29, 29, 36)
-    row.BorderSizePixel = 0
-    row.Parent = featureList
-
-    addRounded(row, 12)
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -120, 1, 0)
-    label.Position = UDim2.new(0, 12, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.GothamSemibold
-    label.Text = labelText
-    label.TextColor3 = Color3.fromRGB(245, 245, 245)
-    label.TextSize = 15
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = row
-
-    local toggleBg = Instance.new("Frame")
-    toggleBg.Size = UDim2.new(0, 54, 0, 26)
-    toggleBg.Position = UDim2.new(1, -66, 0.5, -13)
-    toggleBg.BackgroundColor3 = Color3.fromRGB(85, 85, 92)
-    toggleBg.BorderSizePixel = 0
-    toggleBg.Parent = row
-    addRounded(toggleBg, 13)
-
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Size = UDim2.new(0, 24, 0, 24)
-    toggleButton.Position = UDim2.new(0, 2, 0.5, -12)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    toggleButton.BorderSizePixel = 0
-    toggleButton.Text = ""
-    toggleButton.Parent = toggleBg
-    addRounded(toggleButton, 12)
-
-    local enabled = defaultValue == true
-
-    local function updateState(value)
-        enabled = value
-        if enabled then
-            toggleBg.BackgroundColor3 = Color3.fromRGB(70, 220, 120)
-            toggleButton.Position = UDim2.new(1, -26, 0.5, -12)
-            toggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        else
-            toggleBg.BackgroundColor3 = Color3.fromRGB(85, 85, 92)
-            toggleButton.Position = UDim2.new(0, 2, 0.5, -12)
-            toggleButton.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
-        end
-
-        if callback then
-            callback(enabled)
+-- Auto Pumpkin / Chỉ chọn bí ngô còn sống trên đảo của mình.
+local function findPumpkin(position)
+    local plot = tycoon.Feature("Island").Plot()
+    local target, distance
+    for _, breaker in pairs(plot and plot.Breakables or {}) do
+        if breaker.parentID ~= instanceId or not string.match(breaker.areaID or "", "^Pedestal_%d+$")
+            or breaker.health <= 0 or breaker.disableDamage
+            or not breaker.model or not breaker.model.Parent then continue end
+        local nextDistance = (breaker.position - position).Magnitude
+        if not distance or nextDistance < distance then
+            target, distance = breaker, nextDistance
         end
     end
+    return target
+end
 
-    toggleButton.MouseButton1Click:Connect(function()
-        updateState(not enabled)
+-- Lưu vị trí trước khi đứng cạnh bí ngô.
+local function attackPumpkin(target, character, humanoid, root)
+    local original = character:GetPivot()
+    local assigned = {}
+    local ok, err = pcall(function()
+        petCmds.EquipBest()
+        while pumpkinEnabled and isInEvent() and player.Character == character
+            and humanoid.Health > 0 and root.Parent == character do
+            local breaker = breakables.Get(target.uid)
+            if not breaker or breaker.health <= 0 or not breaker.model or not breaker.model.Parent then break end
+            if (root.Position - breaker.position).Magnitude > 8 then
+                local direction = root.Position - breaker.position
+                local flat = Vector3.new(direction.X, 0, direction.Z)
+                local offset = flat.Magnitude > 0.01 and flat.Unit * 4 or Vector3.new(4, 0, 0)
+                local height = root.Size.Y / 2 + humanoid.HipHeight + 0.5
+                local leg = humanoid.RigType == Enum.HumanoidRigType.R6 and character:FindFirstChild("Left Leg")
+                if leg then height += leg.Size.Y end
+                local rootOffset = root.CFrame:ToObjectSpace(character:GetPivot())
+                root.AssemblyLinearVelocity = Vector3.zero
+                character:PivotTo(CFrame.new(breaker.position + offset + Vector3.new(0, height, 0))
+                    * root.CFrame.Rotation * rootOffset)
+            end
+            local batch = {}
+            for _, pet in pairs(playerPet.GetByPlayer(player) or {}) do
+                if pet.euid then
+                    batch[pet.euid] = target.uid
+                    assigned[pet.euid] = true
+                end
+            end
+            if next(batch) then network.Fire("Breakables_JoinPetBulk", batch) end
+            network.UnreliableFire("Breakables_PlayerDealDamage", target.uid)
+            task.wait(0.25)
+        end
     end)
-
-    local padding = Instance.new("UIPadding")
-    padding.PaddingTop = UDim.new(0, 8)
-    padding.PaddingLeft = UDim.new(0, 0)
-    padding.PaddingRight = UDim.new(0, 0)
-    padding.PaddingBottom = UDim.new(0, 8)
-    padding.Parent = featureList
-
-    -- Keep row positions
-    local children = featureList:GetChildren()
-    table.sort(children, function(a, b)
-        return a.AbsolutePosition.Y < b.AbsolutePosition.Y
-    end)
-
-    updateState(enabled)
-    return {
-        set = updateState
-    }
-end
-
--- Gắn tính năng của bạn
-local pumpkinEnabled = false
-_G.pumpkinEnabled = pumpkinEnabled
-
-local function setPumpkinState(value)
-    pumpkinEnabled = value
-    _G.pumpkinEnabled = value
-end
-
-local currentTab = "Main"
-
--- Tạo feature list
-local feature1 = addFeature("Auto Pumpkin", false, function(value)
-    setPumpkinState(value)
-end)
-
-local feature2 = addFeature("Auto Sell", false, function(value)
-    -- bạn có thể thêm logic ở đây
-end)
-
-local feature3 = addFeature("Fly", false, function(value)
-    -- bạn có thể thêm logic ở đây
-end)
-
-local feature4 = addFeature("Speed", false, function(value)
-    -- bạn có thể thêm logic ở đây
-end)
-
--- Draggable window
-local dragging = false
-local dragStart
-local startPos
-
-local dragGrip = Instance.new("TextButton")
-dragGrip.Size = UDim2.new(1, 0, 0, 38)
-dragGrip.Position = UDim2.new(0, 0, 0, 0)
-dragGrip.BackgroundTransparency = 1
-dragGrip.Text = ""
-dragGrip.Parent = titleBar
-
-dragGrip.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = main.Position
-    end
-end)
-
-dragGrip.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
--- Example: nếu script chính của bạn đã có `pumpkinEnabled`, đây là phần tự động sync
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if _G.pumpkinEnabled ~= nil and _G.pumpkinEnabled ~= pumpkinEnabled then
-            pumpkinEnabled = _G.pumpkinEnabled
-        end
-    end
-end)
-
--- Gợi ý: Logic Auto Pumpkin của bạn đã dùng `pumpkinEnabled`, nên chỉ cần toggle là chạy/stop:
--- while pumpkinEnabled and isInEvent() and player.Character == character do
---     ...
--- end
