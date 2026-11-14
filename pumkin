@@ -1,0 +1,6 @@
+features.EventAutoPumpkin = {
+    duy = function(on)
+        pumpkinEnabled = on
+        if on then startWorker() end
+    end,
+}
