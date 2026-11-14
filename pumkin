@@ -1,3 +1,207 @@
+-- =========================
+-- Mew Hub UI
+-- =========================
+local player = game:GetService("Players").LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("MewHub") then
+    playerGui.MewHub:Destroy()
+end
+
+local pumpkinEnabled = false
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MewHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = playerGui
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 700, 0, 420)
+main.Position = UDim2.new(0.5, -350, 0.5, -210)
+main.BackgroundColor3 = Color3.fromRGB(12, 15, 20)
+main.BorderSizePixel = 0
+main.Parent = ScreenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 16)
+mainCorner.Parent = main
+
+local header = Instance.new("Frame")
+header.Size = UDim2.new(1, 0, 0, 38)
+header.BackgroundColor3 = Color3.fromRGB(11, 14, 18)
+header.BorderSizePixel = 0
+header.Parent = main
+
+local headerCorner = Instance.new("UICorner")
+headerCorner.CornerRadius = UDim.new(0, 16)
+headerCorner.Parent = header
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -120, 1, 0)
+title.Position = UDim2.new(0, 12, 0, 0)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.Text = "Mew Hub"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 18
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = header
+
+local onBtn = Instance.new("TextButton")
+onBtn.Size = UDim2.new(0, 60, 0, 22)
+onBtn.Position = UDim2.new(1, -74, 0.5, -11)
+onBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+onBtn.BorderSizePixel = 0
+onBtn.Text = "ON"
+onBtn.Font = Enum.Font.GothamBold
+onBtn.TextSize = 11
+onBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+onBtn.Parent = header
+
+local onCorner = Instance.new("UICorner")
+onCorner.CornerRadius = UDim.new(1, 10)
+onCorner.Parent = onBtn
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 22, 0, 22)
+closeBtn.Position = UDim2.new(1, -24, 0.5, -11)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 88, 88)
+closeBtn.BorderSizePixel = 0
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 11
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.Parent = header
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 10)
+closeCorner.Parent = closeBtn
+
+local sidebar = Instance.new("Frame")
+sidebar.Size = UDim2.new(0, 200, 1, -38)
+sidebar.Position = UDim2.new(0, 0, 0, 38)
+sidebar.BackgroundColor3 = Color3.fromRGB(13, 16, 21)
+sidebar.BorderSizePixel = 0
+sidebar.Parent = main
+
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1, -200, 1, -38)
+content.Position = UDim2.new(0, 200, 0, 38)
+content.BackgroundColor3 = Color3.fromRGB(14, 18, 23)
+content.BorderSizePixel = 0
+content.Parent = main
+
+local function makeTab(name, y)
+    local tab = Instance.new("TextButton")
+    tab.Size = UDim2.new(1, -18, 0, 42)
+    tab.Position = UDim2.new(0, 9, 0, y)
+    tab.BackgroundColor3 = Color3.fromRGB(50, 56, 65)
+    tab.BorderSizePixel = 0
+    tab.Text = name
+    tab.Font = Enum.Font.GothamSemibold
+    tab.TextColor3 = Color3.fromRGB(235, 235, 235)
+    tab.TextSize = 15
+    tab.AutoButtonColor = false
+    tab.Parent = sidebar
+
+    local tabCorner = Instance.new("UICorner")
+    tabCorner.CornerRadius = UDim.new(0, 10)
+    tabCorner.Parent = tab
+
+    return tab
+end
+
+local mainTab = makeTab("Main", 12)
+local miscTab = makeTab("Misc", 58)
+
+local function setTabSelected(tab)
+    mainTab.BackgroundColor3 = Color3.fromRGB(50, 56, 65)
+    miscTab.BackgroundColor3 = Color3.fromRGB(50, 56, 65)
+    tab.BackgroundColor3 = Color3.fromRGB(63, 69, 77)
+end
+
+mainTab.MouseButton1Click:Connect(function()
+    setTabSelected(mainTab)
+end)
+
+miscTab.MouseButton1Click:Connect(function()
+    setTabSelected(miscTab)
+end)
+
+setTabSelected(mainTab)
+
+local row = Instance.new("Frame")
+row.Size = UDim2.new(1, -20, 0, 54)
+row.Position = UDim2.new(0, 10, 0, 10)
+row.BackgroundColor3 = Color3.fromRGB(18, 22, 28)
+row.BorderSizePixel = 0
+row.Parent = content
+
+local rowCorner = Instance.new("UICorner")
+rowCorner.CornerRadius = UDim.new(0, 12)
+rowCorner.Parent = row
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, -120, 1, 0)
+label.Position = UDim2.new(0, 18, 0, 0)
+label.BackgroundTransparency = 1
+label.Text = "Fly"
+label.Font = Enum.Font.Gotham
+label.TextSize = 18
+label.TextColor3 = Color3.fromRGB(240, 240, 240)
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.Parent = row
+
+local toggleBg = Instance.new("Frame")
+toggleBg.Size = UDim2.new(0, 64, 0, 28)
+toggleBg.Position = UDim2.new(1, -76, 0.5, -14)
+toggleBg.BackgroundColor3 = Color3.fromRGB(104, 108, 114)
+toggleBg.BorderSizePixel = 0
+toggleBg.Parent = row
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 14)
+toggleCorner.Parent = toggleBg
+
+local knob = Instance.new("Frame")
+knob.Size = UDim2.new(0, 22, 0, 22)
+knob.Position = UDim2.new(0, 3, 0.5, -11)
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.BorderSizePixel = 0
+knob.Parent = toggleBg
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 11)
+knobCorner.Parent = knob
+
+local function updateToggle(value)
+    pumpkinEnabled = value
+    if pumpkinEnabled then
+        toggleBg.BackgroundColor3 = Color3.fromRGB(112, 226, 140)
+        knob.Position = UDim2.new(1, -25, 0.5, -11)
+    else
+        toggleBg.BackgroundColor3 = Color3.fromRGB(104, 108, 114)
+        knob.Position = UDim2.new(0, 3, 0.5, -11)
+    end
+end
+
+toggleBg.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        updateToggle(not pumpkinEnabled)
+    end
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+    ScreenGui.Enabled = false
+end)
+
+-- Gắn với logic hiện tại của bạn:
+-- if pumpkinEnabled then
+--     -- bật chức năng auto pumpkin
+-- else
+--     -- tắt chức năng auto pumpkin
+-- end
 -- Auto Pumpkin / Chỉ chọn bí ngô còn sống trên đảo của mình.
 local function findPumpkin(position)
     local plot = tycoon.Feature("Island").Plot()
