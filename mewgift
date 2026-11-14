@@ -192,7 +192,7 @@ end
 
 local function checkAndHideGui(gui: Instance)
     if not state.hideGiftGui or not gui:IsA("ScreenGui") then return end
-    if gui.Name == "DuckkyHub_ScreenGui" then return end
+    if gui.Name == "MewHub_ScreenGui" then return end
     local nameLower = string.lower(gui.Name)
     if string.find(nameLower, "lootbox") or string.find(nameLower, "giftbag") or string.find(nameLower, "opening") or string.find(nameLower, "reward") then
         (gui :: any).Enabled = false
@@ -262,7 +262,7 @@ local function makeDraggable(dragHandle: GuiObject, targetFrame: GuiObject)
     end)
 end
 
--- Nút nổi bật/tắt nhanh "🦆 Duckky Hub"
+-- Nút nổi bật/tắt nhanh "🦆 Mew Hub"
 local floatBtn = Instance.new("TextButton")
 floatBtn.Name = "FloatToggleBtn"
 floatBtn.Size = UDim2.fromOffset(145, 38)
