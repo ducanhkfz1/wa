@@ -271,7 +271,7 @@ floatBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
 floatBtn.TextColor3 = Color3.fromRGB(255, 210, 60)
 floatBtn.Font = Enum.Font.GothamBold
 floatBtn.TextSize = 14
-floatBtn.Text = "🦆 Duckky Hub"
+floatBtn.Text = "🦆 Mew Hub"
 floatBtn.AutoButtonColor = true
 floatBtn.Parent = screenGui
 
@@ -343,7 +343,7 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 15
 titleLabel.TextColor3 = Color3.fromRGB(245, 245, 250)
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Text = "🦆 Duckky Hub  —  Pet Simulator 99"
+titleLabel.Text = "🦆 Mew Hub  —  Pet Simulator 99"
 titleLabel.Parent = topBar
 
 -- Cụm nút Traffic Lights phong cách macOS + nút [-] [x] rõ ràng
