@@ -9,6 +9,10 @@ local window = Rayfield:CreateWindow({
         fileName = "RobloxHubUI",
     },
 })
+-- 2. Tải các module tính năng
+-- Thêm một URL Raw vào danh sách cho mỗi file xử lý mới.
+local urls = {
+    "https://raw.githubusercontent.com/duyvip453/dyu/refs/heads/main/event.lua",
 -- 5. Cấu hình các tab
 
 -- Tạo toggle mở map event.
