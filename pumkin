@@ -48,12 +48,12 @@ local function attackPumpkin(target, character, humanoid, root)
             task.wait(0.25)
         end
     end)
+    if not ok then
+        warn("Pumpkin attack error:", err)
+    end
 end
 
 -- Mew Hub UI
-pumpkinEnabled = false
-_G.pumpkinEnabled = false
-
 local player = game:GetService("Players").LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -61,100 +61,98 @@ if playerGui:FindFirstChild("MewHub") then
     playerGui.MewHub:Destroy()
 end
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MewHub"
-screenGui.ResetOnSpawn = false
-screenGui.IgnoreGuiInset = true
-screenGui.Parent = playerGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MewHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = playerGui
 
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0, 700, 0, 420)
 main.Position = UDim2.new(0.5, -350, 0.5, -210)
-main.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+main.BackgroundColor3 = Color3.fromRGB(12, 15, 20)
 main.BorderSizePixel = 0
-main.Parent = screenGui
+main.Parent = ScreenGui
 
 local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 18)
+mainCorner.CornerRadius = UDim.new(0, 16)
 mainCorner.Parent = main
 
 local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 40)
-header.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+header.Size = UDim2.new(1, 0, 0, 38)
+header.BackgroundColor3 = Color3.fromRGB(11, 14, 18)
 header.BorderSizePixel = 0
 header.Parent = main
 
 local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 18)
+headerCorner.CornerRadius = UDim.new(0, 16)
 headerCorner.Parent = header
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(0, 200, 1, 0)
-title.Position = UDim2.new(0, 16, 0, 0)
+title.Size = UDim2.new(1, -120, 1, 0)
+title.Position = UDim2.new(0, 12, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "Mew Hub"
 title.Font = Enum.Font.GothamBold
-title.TextSize = 19
+title.Text = "Mew Hub"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 18
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = header
 
-local status = Instance.new("TextLabel")
-status.Size = UDim2.new(0, 90, 1, 0)
-status.Position = UDim2.new(1, -100, 0, 0)
-status.BackgroundTransparency = 1
-status.Text = "ONLINE"
-status.Font = Enum.Font.GothamBold
-status.TextSize = 11
-status.TextColor3 = Color3.fromRGB(90, 255, 150)
-status.TextXAlignment = Enum.TextXAlignment.Right
-status.Parent = header
+local onBtn = Instance.new("TextButton")
+onBtn.Size = UDim2.new(0, 60, 0, 22)
+onBtn.Position = UDim2.new(1, -74, 0.5, -11)
+onBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+onBtn.BorderSizePixel = 0
+onBtn.Text = "ON"
+onBtn.Font = Enum.Font.GothamBold
+onBtn.TextSize = 11
+onBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+onBtn.Parent = header
+
+local onCorner = Instance.new("UICorner")
+onCorner.CornerRadius = UDim.new(1, 10)
+onCorner.Parent = onBtn
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 22, 0, 22)
+closeBtn.Position = UDim2.new(1, -24, 0.5, -11)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 88, 88)
+closeBtn.BorderSizePixel = 0
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 11
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.Parent = header
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 10)
+closeCorner.Parent = closeBtn
 
 local sidebar = Instance.new("Frame")
-sidebar.Size = UDim2.new(0, 180, 1, -40)
-sidebar.Position = UDim2.new(0, 0, 0, 40)
-sidebar.BackgroundColor3 = Color3.fromRGB(24, 24, 29)
+sidebar.Size = UDim2.new(0, 200, 1, -38)
+sidebar.Position = UDim2.new(0, 0, 0, 38)
+sidebar.BackgroundColor3 = Color3.fromRGB(13, 16, 21)
 sidebar.BorderSizePixel = 0
 sidebar.Parent = main
 
-local sidebarCorner = Instance.new("UICorner")
-sidebarCorner.CornerRadius = UDim.new(0, 18)
-sidebarCorner.Parent = sidebar
-
 local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -180, 1, -40)
-content.Position = UDim2.new(0, 180, 0, 40)
-content.BackgroundColor3 = Color3.fromRGB(19, 19, 23)
+content.Size = UDim2.new(1, -200, 1, -38)
+content.Position = UDim2.new(0, 200, 0, 38)
+content.BackgroundColor3 = Color3.fromRGB(14, 18, 23)
 content.BorderSizePixel = 0
 content.Parent = main
 
-local contentCorner = Instance.new("UICorner")
-contentCorner.CornerRadius = UDim.new(0, 18)
-contentCorner.Parent = content
-
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -20, 1, -20)
-scroll.Position = UDim2.new(0, 10, 0, 10)
-scroll.BackgroundTransparency = 1
-scroll.BorderSizePixel = 0
-scroll.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-scroll.MidImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-scroll.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-scroll.ScrollBarThickness = 6
-scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-scroll.Parent = content
-
 local function makeTab(name, y)
     local tab = Instance.new("TextButton")
-    tab.Size = UDim2.new(1, -18, 0, 36)
+    tab.Size = UDim2.new(1, -18, 0, 42)
     tab.Position = UDim2.new(0, 9, 0, y)
-    tab.BackgroundColor3 = Color3.fromRGB(38, 38, 46)
+    tab.BackgroundColor3 = Color3.fromRGB(50, 56, 65)
     tab.BorderSizePixel = 0
     tab.Text = name
     tab.Font = Enum.Font.GothamSemibold
-    tab.TextColor3 = Color3.fromRGB(230, 230, 230)
-    tab.TextSize = 14
+    tab.TextColor3 = Color3.fromRGB(235, 235, 235)
+    tab.TextSize = 15
     tab.AutoButtonColor = false
     tab.Parent = sidebar
 
@@ -162,169 +160,98 @@ local function makeTab(name, y)
     tabCorner.CornerRadius = UDim.new(0, 10)
     tabCorner.Parent = tab
 
-    local tabStroke = Instance.new("UIStroke")
-    tabStroke.Color = Color3.fromRGB(255, 255, 255)
-    tabStroke.Transparency = 0.82
-    tabStroke.Thickness = 1
-    tabStroke.Parent = tab
-
     return tab
 end
 
 local mainTab = makeTab("Main", 12)
 local miscTab = makeTab("Misc", 58)
 
-local function addSwitch(labelText, defaultValue, callback)
-    local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, 0, 0, 54)
-    row.BackgroundColor3 = Color3.fromRGB(31, 31, 38)
-    row.BorderSizePixel = 0
-    row.Parent = scroll
-
-    local rowCorner = Instance.new("UICorner")
-    rowCorner.CornerRadius = UDim.new(0, 12)
-    rowCorner.Parent = row
-
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(1, -100, 1, 0)
-    textLabel.Position = UDim2.new(0, 12, 0, 0)
-    textLabel.BackgroundTransparency = 1
-    textLabel.Text = labelText
-    textLabel.Font = Enum.Font.GothamSemibold
-    textLabel.TextSize = 15
-    textLabel.TextColor3 = Color3.fromRGB(245, 245, 245)
-    textLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textLabel.Parent = row
-
-    local toggleBg = Instance.new("Frame")
-    toggleBg.Size = UDim2.new(0, 58, 0, 27)
-    toggleBg.Position = UDim2.new(1, -70, 0.5, -13)
-    toggleBg.BackgroundColor3 = Color3.fromRGB(100, 100, 110)
-    toggleBg.BorderSizePixel = 0
-    toggleBg.Parent = row
-
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(1, 14)
-    toggleCorner.Parent = toggleBg
-
-    local knob = Instance.new("TextButton")
-    knob.Size = UDim2.new(0, 23, 0, 23)
-    knob.Position = UDim2.new(0, 2, 0.5, -11.5)
-    knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    knob.BorderSizePixel = 0
-    knob.Text = ""
-    knob.Parent = toggleBg
-
-    local knobCorner = Instance.new("UICorner")
-    knobCorner.CornerRadius = UDim.new(1, 12)
-    knobCorner.Parent = knob
-
-    local enabled = defaultValue == true
-
-    local function updateState(value)
-        enabled = value
-        if enabled then
-            toggleBg.BackgroundColor3 = Color3.fromRGB(73, 224, 116)
-            knob.Position = UDim2.new(1, -25, 0.5, -11.5)
-        else
-            toggleBg.BackgroundColor3 = Color3.fromRGB(100, 100, 110)
-            knob.Position = UDim2.new(0, 2, 0.5, -11.5)
-        end
-
-        if callback then
-            callback(enabled)
-        end
-    end
-
-    knob.MouseButton1Click:Connect(function()
-        updateState(not enabled)
-    end)
-
-    updateState(enabled)
-    return { set = updateState }
+local function setTabSelected(tab)
+    mainTab.BackgroundColor3 = Color3.fromRGB(50, 56, 65)
+    miscTab.BackgroundColor3 = Color3.fromRGB(50, 56, 65)
+    tab.BackgroundColor3 = Color3.fromRGB(63, 69, 77)
 end
 
-local function setPumpkinState(value)
-    pumpkinEnabled = value
-    _G.pumpkinEnabled = value
+mainTab.MouseButton1Click:Connect(function()
+    setTabSelected(mainTab)
+end)
+
+miscTab.MouseButton1Click:Connect(function()
+    setTabSelected(miscTab)
+end)
+
+setTabSelected(mainTab)
+
+local row = Instance.new("Frame")
+row.Size = UDim2.new(1, -20, 0, 54)
+row.Position = UDim2.new(0, 10, 0, 10)
+row.BackgroundColor3 = Color3.fromRGB(18, 22, 28)
+row.BorderSizePixel = 0
+row.Parent = content
+
+local rowCorner = Instance.new("UICorner")
+rowCorner.CornerRadius = UDim.new(0, 12)
+rowCorner.Parent = row
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, -120, 1, 0)
+label.Position = UDim2.new(0, 18, 0, 0)
+label.BackgroundTransparency = 1
+label.Text = "Fly"
+label.Font = Enum.Font.Gotham
+label.TextSize = 18
+label.TextColor3 = Color3.fromRGB(240, 240, 240)
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.Parent = row
+
+local toggleBg = Instance.new("Frame")
+toggleBg.Size = UDim2.new(0, 64, 0, 28)
+toggleBg.Position = UDim2.new(1, -76, 0.5, -14)
+toggleBg.BackgroundColor3 = Color3.fromRGB(104, 108, 114)
+toggleBg.BorderSizePixel = 0
+toggleBg.Parent = row
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 14)
+toggleCorner.Parent = toggleBg
+
+local knob = Instance.new("Frame")
+knob.Size = UDim2.new(0, 22, 0, 22)
+knob.Position = UDim2.new(0, 3, 0.5, -11)
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.BorderSizePixel = 0
+knob.Parent = toggleBg
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 11)
+knobCorner.Parent = knob
+
+local enabled = false
+
+local function updateToggle(value)
+    enabled = value
+    if enabled then
+        toggleBg.BackgroundColor3 = Color3.fromRGB(112, 226, 140)
+        knob.Position = UDim2.new(1, -25, 0.5, -11)
+    else
+        toggleBg.BackgroundColor3 = Color3.fromRGB(104, 108, 114)
+        knob.Position = UDim2.new(0, 3, 0.5, -11)
+    end
 end
 
-local uiSwitch = addSwitch("Auto Pumpkin", false, function(value)
-    setPumpkinState(value)
-end)
-
-addSwitch("Auto Sell", false, function(value)
-    -- thêm logic tùy chỉnh ở đây
-end)
-
-addSwitch("Speed", false, function(value)
-    -- thêm logic tùy chỉnh ở đây
-end)
-
-addSwitch("Fly", false, function(value)
-    -- thêm logic tùy chỉnh ở đây
-end)
-
-local dragging = false
-local dragStart
-local startPos
-
-local dragButton = Instance.new("TextButton")
-dragButton.Size = UDim2.new(1, 0, 0, 40)
-dragButton.Position = UDim2.new(0, 0, 0, 0)
-dragButton.BackgroundTransparency = 1
-dragButton.Text = ""
-dragButton.Parent = header
-
-dragButton.InputBegan:Connect(function(input)
+toggleBg.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = main.Position
+        updateToggle(not enabled)
     end
 end)
-
-dragButton.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 24, 0, 24)
-closeBtn.Position = UDim2.new(1, -32, 0.5, -12)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
-closeBtn.BorderSizePixel = 0
-closeBtn.Text = "X"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextSize = 12
-closeBtn.Parent = header
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(1, 12)
-closeCorner.Parent = closeBtn
 
 closeBtn.MouseButton1Click:Connect(function()
-    screenGui.Enabled = false
+    ScreenGui.Enabled = false
 end)
 
--- Đồng bộ trạng thái toggle nếu script khác đang đổi biến global
-spawn(function()
-    while true do
-        task.wait(0.1)
-        if _G.pumpkinEnabled ~= nil and _G.pumpkinEnabled ~= pumpkinEnabled then
-            pumpkinEnabled = _G.pumpkinEnabled
-            uiSwitch.set(pumpkinEnabled)
-        end
-    end
-end)
-
--- Nếu script auto pumpkin chính của bạn dùng `pumpkinEnabled`, hãy chắc chắn biến này được cập nhật từ UI.
+-- Nếu muốn bật/tắt logic thật:
+-- if enabled then
+--     -- bật fly
+-- else
+--     -- tắt fly
+-- end
