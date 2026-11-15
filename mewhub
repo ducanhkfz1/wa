@@ -104,7 +104,7 @@ for _, url in ipairs(urls) do
     if filename == "webhook.lua" and not source:find("%S") then continue end
     local loadTab = assert(loadstring(source, "@" .. filename))
     local moduleFeatures
-    if filename == "rank.lua" then
+    if filename == "rank.lua" or filename == "event.lua" then
         moduleFeatures = loadTab(scriptStartedAt)
     else
         moduleFeatures = loadTab()
@@ -119,7 +119,7 @@ end
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/gen2"))()
 
 local window = Rayfield:CreateWindow({
-    name = "Mew Hub",
+    name = "MewHub",
     sidebarLayout = true,
     configuration = {
         autoSave = launchConfig == nil,
@@ -155,13 +155,14 @@ local function createToggle(tab, name, flag)
         end
     end
 
-    tab:CreateToggle({
+    local control = tab:CreateToggle({
         name = name,
         flag = flag,
         value = initial,
         callback = apply,
     })
     if initial then table.insert(startupActions, function() apply(true) end) end
+    return control
 end
 
 -- 5. Cấu hình các tab
@@ -173,6 +174,11 @@ do
     createToggle(event, "auto buy pumkin", "EventAutoBuyPumpkin")
     createToggle(event, "optimize event", "EventOptimize")
     createToggle(event, "fast farm event", "EventFastFarm")
+    local stats = features.EventStatsGui
+    if stats then
+        local control = createToggle(event, "stats event", "EventStatsGui")
+        stats.setQuickClose(function() control:Set(false) end)
+    end
 
     -- Chọn các mục nâng cấp Pumpkin Tycoon.
     local upgrade = features.EventAutoPumpkinUpgrade
@@ -195,6 +201,30 @@ do
         })
         if launchConfig then upgrade.setSelection(initial) end
         createToggle(event, "auto pumpkin upgrade", "EventAutoPumpkinUpgrade")
+    end
+
+    -- Chọn boost dùng tự động trong Pumpkin Tycoon.
+    local boost = features.EventAutoEquipBoost
+    if boost then
+        local options, initial = boost.getOptions(), {}
+        local preset = launchConfig and launchConfig.boosts
+        if boost.resolveSelection then
+            initial = boost.resolveSelection(preset)
+        elseif type(preset) == "table" then
+            for _, name in ipairs(options) do
+                if table.find(preset, name) then table.insert(initial, name) end
+            end
+        end
+        event:CreateDropdown({
+            name = "Boosts",
+            flag = "EventBoostSelection",
+            options = options,
+            multiSelect = true,
+            value = initial,
+            callback = boost.setSelection,
+        })
+        if launchConfig then boost.setSelection(initial) end
+        createToggle(event, "auto equip boost", "EventAutoEquipBoost")
     end
 end
 
@@ -250,10 +280,12 @@ do
     createToggle(mail, "Tự nhận thư", "MailAutoClaim")
     local gift = features.MailAutoGift
     if not gift then return end
+    local preset = launchConfig and launchConfig.mailGift
+    local recipient = type(preset) == "table" and type(preset.recipient) == "string" and preset.recipient or ""
     mail:CreateInput({
         name = "User Name",
         flag = "MailUserName",
-        value = "",
+        value = recipient,
         placeholder = "...",
         callback = gift.setRecipient,
     })
@@ -318,6 +350,17 @@ do
             updateGiftText()
         end,
     })
+    -- Nạp người nhận và danh sách trước khi launcher bật Auto Gift.
+    if type(preset) == "table" then
+        gift.setRecipient(recipient)
+        for _, rule in ipairs(type(preset.items) == "table" and preset.items or {}) do
+            if type(rule) == "table" then
+                local added, reason = gift.add(rule.class, rule.name, tostring(rule.amount), tostring(rule.keep))
+                if not added then warn("[Auto Gift] " .. reason) end
+            end
+        end
+        updateGiftText()
+    end
     createToggle(mail, "auto gift", "MailAutoGift")
 end
 
@@ -342,11 +385,20 @@ end
 do
     -- Webhook chung: URL, loại thông báo và nút điều khiển.
     local petWebhook = features.WebhookEnabled
+    local petPreset = launchConfig and type(launchConfig.petWebhook) == "table" and launchConfig.petWebhook or {}
+    local initialPetUrl = type(petPreset.url) == "string" and petPreset.url or ""
+    local petOptions = petWebhook and petWebhook.getOptions() or {}
+    local initialPetEvents = {}
+    if type(petPreset.events) == "table" then
+        for _, category in ipairs(petOptions) do
+            if table.find(petPreset.events, category) then table.insert(initialPetEvents, category) end
+        end
+    end
     webhook:CreateSection({ name = "webhook" })
     webhook:CreateInput({
         name = "Webhook URL",
         flag = "WebhookUrl",
-        value = "",
+        value = initialPetUrl,
         placeholder = "Dán link webhook",
         callback = function(value)
             if petWebhook then petWebhook.setUrl(value) end
@@ -355,14 +407,19 @@ do
     webhook:CreateDropdown({
         name = "Webhook Events",
         flag = "WebhookEvents",
-        options = petWebhook and petWebhook.getOptions() or {},
+        options = petOptions,
         multiSelect = true,
-        value = {},
+        value = initialPetEvents,
         placeholder = "Chọn loại pet muốn báo",
         callback = function(values)
             if petWebhook then petWebhook.setSelection(values) end
         end,
     })
+    -- Nạp URL và loại pet trước khi launcher bật webhook.
+    if petWebhook and launchConfig then
+        petWebhook.setUrl(initialPetUrl)
+        petWebhook.setSelection(initialPetEvents)
+    end
     createToggle(webhook, "Start Webhook", "WebhookEnabled")
     webhook:CreateButton({
         name = "Test Webhook",
