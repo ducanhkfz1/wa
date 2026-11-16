@@ -120,7 +120,7 @@ end
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/gen2"))()
 
 local window = Rayfield:CreateWindow({
-    name = "Menu Roblox",
+    name = "Mew 29hannoi",
     sidebarLayout = true,
     configuration = {
         autoSave = launchConfig == nil,
