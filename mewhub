@@ -93,6 +93,7 @@ local urls = {
     "https://raw.githubusercontent.com/duyvip453/dyu/refs/heads/main/mail.lua",
     "https://raw.githubusercontent.com/duyvip453/dyu/main/webhook.lua",
     "https://raw.githubusercontent.com/duyvip453/dyu/main/event.lua",
+    "https://raw.githubusercontent.com/duyvip453/dyu/main/trading.lua",
 }
 
 -- Gộp tính năng từ các module theo tên flag.
@@ -119,7 +120,7 @@ end
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/gen2"))()
 
 local window = Rayfield:CreateWindow({
-    name = "Mew 29Hanoi",
+    name = "Menu Roblox",
     sidebarLayout = true,
     configuration = {
         autoSave = launchConfig == nil,
@@ -172,8 +173,37 @@ do
     createToggle(event, "auto open map event", "EventAutoOpenMap")
     createToggle(event, "auto pumpkin", "EventAutoPumpkin")
     createToggle(event, "auto buy pumkin", "EventAutoBuyPumpkin")
-    createToggle(event, "optimize event", "EventOptimize")
+    createToggle(event, "Auto Hot Coca", "EventAutoHotCoca")
     createToggle(event, "auto fannel gift", "EventAutoFlannelGift")
+    local hugeGift = features.EventAutoGiftHuge
+    if hugeGift then
+        local inputFlag = "EventHugeGiftRecipient"
+        local inputs = launchConfig and launchConfig.inputs
+        local preset = launchConfig and (
+            launchConfig.eventHugeGiftRecipient
+            or launchConfig[inputFlag]
+            or (type(inputs) == "table" and inputs[inputFlag])
+            or launchToggles[inputFlag]
+        )
+        local recipient = type(preset) == "string" and preset:match("^%s*(.-)%s*$") or ""
+        local input = event:CreateInput({
+            name = "Gift Huge User Name",
+            flag = inputFlag,
+            value = recipient,
+            placeholder = "Roblox username",
+            callback = hugeGift.setRecipient,
+        })
+        -- Đồng bộ ô tên và module trước khi launcher bật Auto Gift Huge.
+        if launchConfig then
+            table.insert(startupActions, function()
+                input:Set(recipient, true)
+                hugeGift.setRecipient(recipient)
+            end)
+        end
+        local control = createToggle(event, "Auto Gift Huge", "EventAutoGiftHuge")
+        hugeGift.setStopCallback(function() control:Set(false) end)
+    end
+    createToggle(event, "optimize event", "EventOptimize")
     createToggle(event, "fast farm event", "EventFastFarm")
     local stats = features.EventStatsGui
     if stats then
@@ -369,6 +399,30 @@ end
 do
     local boothSnipe = trading:CreateGroup({ direction = "column" })
     boothSnipe:CreateSection({ name = "Săn món ở gian hàng" })
+    local sniper = features.TradingSniperBooth
+    if sniper then
+        local config = launchConfig and launchConfig.trading
+        trading:CreateText({ text = sniper.configure(config) })
+        createToggle(trading, "Sniper Booth", "TradingSniperBooth")
+        local report = features.TradingWebhook
+        if report then
+            config = type(config) == "table" and config or {}
+            -- Nhập URL và số dư cảnh báo cho webhook giao dịch.
+            trading:CreateInput({
+                name = "Trading Webhook URL",
+                flag = "TradingWebhookUrl",
+                value = type(config.webhookUrl) == "string" and config.webhookUrl or "",
+                callback = report.setUrl,
+            })
+            trading:CreateInput({
+                name = "Min Diamonds",
+                flag = "TradingMinDiamond",
+                value = tostring(config.minDiamond or 0),
+                callback = report.setMinimum,
+            })
+            createToggle(trading, "Webhook Trading", "TradingWebhook")
+        end
+    end
 
     local boothSeller = trading:CreateGroup({ direction = "column" })
     boothSeller:CreateSection({ name = "Bán ở gian hàng" })
