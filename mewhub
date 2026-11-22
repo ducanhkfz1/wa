@@ -65,6 +65,8 @@ do
         environment.RobloxHubAntiAfkConnection = runService.Heartbeat:Connect(function()
             local now = os.clock()
             if now < nextInputAt then return end
+            local turkey = environment.RobloxHubEventTurkey
+            if turkey and turkey.busy then return end
             nextInputAt = now + 60
 
             if input:GetFocusedTextBox() or (useNativeInput and type(isrbxactive) == "function" and not isrbxactive()) then
@@ -222,6 +224,8 @@ local function createToggle(tab, name, flag)
         local feature = features[flag]
         if feature and (not launchConfig or applied ~= enabled) then
             applied = enabled
+            local turkey = features.EventAutoTurkey
+            if turkey and turkey.deferControl and turkey.deferControl(flag, enabled) then return end
             feature.duy(enabled, features)
         end
     end
@@ -418,8 +422,9 @@ do
     createToggle(event, "auto open map event", "EventAutoOpenMap")
     createToggle(event, "Auto Rebirth Event (100%)", "EventAutoRebirth")
     createToggle(event, "Auto Hunt Pet", "EventAutoHuntPet")
+    createToggle(event, "Auto Turkey", "EventAutoTurkey")
     createToggle(event, "auto pumpkin", "EventAutoPumpkin")
-    createToggle(event, "auto buy pumkin", "EventAutoBuyPumpkin")
+    createToggle(event, "Auto Buy Pumpkin + Pet Net", "EventAutoBuyPumpkin")
     createToggle(event, "Auto Hot Coca", "EventAutoHotCoca")
     createToggle(event, "auto fannel gift", "EventAutoFlannelGift")
     local hugeGift = features.EventAutoGiftHuge
