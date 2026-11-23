@@ -179,7 +179,7 @@ end
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/gen2"))()
 
 local window = Rayfield:CreateWindow({
-    name = "MewMew",
+    name = "Mew 29HaNoi",
     sidebarLayout = true,
     configuration = {
         autoSave = launchConfig == nil,
